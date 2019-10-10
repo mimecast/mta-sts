@@ -29,8 +29,22 @@ This however does not mean they will be given priority or ever be done.
 Any merge request made should align to existing coding style and naming convention.
 Before submitting a merge request please run a comprehensive code quality analysis (IntelliJ, SonarQube).
 
+Read more [here](contributing.md).
 
-RFC Excerpts:
--------------
+
+RFC Excerpts
+------------
 - [MTA-STS](doc/mta-sts.md)
 - [TLSRPT](doc/tlsrpt.md)
+
+
+Usage
+-----
+- [Library usage](doc/lib.md)
+- [CLI usage](doc/cli.md)
+
+
+Guidelines
+----------
+- [Contributing](contributing.md)
+- [Code of conduct](code_of_conduct.md)
