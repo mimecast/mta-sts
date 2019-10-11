@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="30" shutdownHook="disable">
+    <Appenders>
+        <RollingFile name="appender" filePattern="./log/%d{yyyyMMdd}.log">
+            <PatternLayout pattern="%-5p|%d{MMdd-HHmmssSSS}|%t|%c{2}|%m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%m%n"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.mimecast.mtasts" level="trace" additivity="false">
+            <AppenderRef ref="appender"/>
+            <AppenderRef ref="console"/>
+        </Logger>
+
+        <Root level="error">
+            <AppenderRef ref="appender"/>
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+
+</Configuration>
