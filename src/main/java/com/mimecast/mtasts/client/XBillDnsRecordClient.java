@@ -3,6 +3,7 @@ package com.mimecast.mtasts.client;
 import com.mimecast.mtasts.assets.DnsRecord;
 import com.mimecast.mtasts.assets.StsRecord;
 import com.mimecast.mtasts.assets.StsReport;
+import com.mimecast.mtasts.assets.XBillDnsRecord;
 import com.mimecast.mtasts.util.LocalDnsResolver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -99,7 +100,7 @@ public class XBillDnsRecordClient implements DnsRecordClient {
             List<DnsRecord> records = new ArrayList<>();
             for (Record record : recordList) {
                 if (record instanceof MXRecord) {
-                    records.add(new DnsRecord((MXRecord) record));
+                    records.add(new XBillDnsRecord((MXRecord) record));
                 }
             }
 
