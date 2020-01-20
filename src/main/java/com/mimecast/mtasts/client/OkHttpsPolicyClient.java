@@ -1,8 +1,11 @@
 package com.mimecast.mtasts.client;
 
-import com.mimecast.mtasts.assets.StsPolicy;
 import com.mimecast.mtasts.assets.StsRecord;
-import okhttp3.*;
+import com.mimecast.mtasts.config.ConfigHandler;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -15,12 +18,10 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Ok Https Policy Client.
+ * OK HTTPS Policy Client.
  * <p>HTTPS client implemenation specific for MTA-STS.
  *
  * @link https://tools.ietf.org/html/rfc8461#section-3.3 RFC8461#section-3.3
@@ -28,28 +29,13 @@ import java.util.concurrent.TimeUnit;
  * @author "Vlad Marian" <vmarian@mimecast.com>
  * @link http://mimecast.com Mimecast
  */
-public class OkHttpsPolicyClient implements HttpsPolicyClient {
+public class OkHttpsPolicyClient extends ConfigHandler implements HttpsPolicyClient {
     private static final Logger log = LogManager.getLogger(OkHttpsPolicyClient.class);
 
     /**
      * Trust manager to use for certificate validation.
      */
     private final X509TrustManager trustManager;
-
-    /**
-     * HTTPS connection timeout.
-     */
-    private static int connectTimeout = 10;
-
-    /**
-     * HTTPS write timeout.
-     */
-    private static int writeTimeout = 10;
-
-    /**
-     * HTTPS read timeout.
-     */
-    private static int readTimeout = 10;
 
     /**
      * Constructs a new HttpPolicyClient instance.
@@ -66,65 +52,31 @@ public class OkHttpsPolicyClient implements HttpsPolicyClient {
      * <p>Will only return valid and not expired policies.
      *
      * @param record StsRecord instance.
-     * @return Optional of StsPolicy instance.
+     * @return OkHttpsResponse instance.
      */
     @Override
-    public Optional<StsPolicy> getPolicy(StsRecord record) {
-        if (record != null) {
+    public OkHttpsResponse getPolicy(StsRecord record) {
+        if (record != null && record.getDomain() != null) {
             try {
-                // Request
+                // Request.
                 Request request = new Request.Builder()
                         .url(getUrl(record.getDomain()))
                         .addHeader("Content-Type", "text/plain")
                         .addHeader("Cache-Control", "no-cache")
                         .build();
 
-                // Response
+                // Response.
                 Response response = getClient().newCall(request).execute();
-                ResponseBody body = response.body();
 
-                // Success
-                if (response.isSuccessful() && response.code() == 200 && response.handshake() != null && body != null &&
-                        Objects.equals(response.header("Content-Type"), "text/plain")) {
-
-                    StsPolicy policy = new StsPolicy(record, body.string());
-                    setPeerCertificates(response, policy);
-
-                    // Return only if valid
-                    if (policy.isValid()) {
-                        return Optional.of(policy);
-                    }
-                    else {
-                        log.warn("Policy retrieved but invalid");
-                    }
-                }
-                else {
-                    log.error("Response error: {}", response.message());
-                }
+                // Policy.
+                return new OkHttpsResponse(response);
 
             } catch (GeneralSecurityException | IOException e) {
-                log.error("Unable to retrieve policy: {}", e.getMessage());
+                log.error("Policy cannot be retrieved: {}", e.getMessage());
             }
         }
 
-        return Optional.empty();
-    }
-
-    /**
-     * Sets peer certificate chain or tries to.
-     * <p>Capture and log error signaling connection was not secure (testing).
-     *
-     * @param response Response instance.
-     * @param policy   StsPolicy instance.
-     */
-    private void setPeerCertificates(Response response, StsPolicy policy) {
-        try {
-            if (response.handshake() != null) {
-                policy.setPeerCertificates(response.handshake().peerCertificates());
-            }
-        } catch (Exception e) {
-            log.error("Found no peer certificate chain");
-        }
+        return null;
     }
 
     /**
@@ -146,7 +98,7 @@ public class OkHttpsPolicyClient implements HttpsPolicyClient {
      * @throws NoSuchAlgorithmException No such algorithm exception.
      */
     private OkHttpClient getClient() throws KeyManagementException, NoSuchAlgorithmException {
-        // Client
+        // Client.
         SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         sslContext.init(null, new TrustManager[] { trustManager }, null);
         SSLSocketFactory socketFactory = sslContext.getSocketFactory();
@@ -165,39 +117,12 @@ public class OkHttpsPolicyClient implements HttpsPolicyClient {
     protected OkHttpClient.Builder getBuilder(SSLSocketFactory socketFactory) {
         return new OkHttpClient.Builder()
                 .addInterceptor(new UserAgentInterceptor())
-                .connectTimeout(connectTimeout, TimeUnit.SECONDS)
-                .writeTimeout(writeTimeout, TimeUnit.SECONDS)
-                .readTimeout(readTimeout, TimeUnit.SECONDS)
+                .connectTimeout(config.getConnectTimeout(), TimeUnit.SECONDS)
+                .writeTimeout(config.getWriteTimeout(), TimeUnit.SECONDS)
+                .readTimeout(config.getReadTimeout(), TimeUnit.SECONDS)
                 .sslSocketFactory(socketFactory, trustManager)
                 .followRedirects(false)
                 .followSslRedirects(false);
-    }
-
-    /**
-     * Sets connection timeout.
-     *
-     * @param seconds Integer.
-     */
-    public static void setConnectTimeout(int seconds) {
-        connectTimeout = seconds;
-    }
-
-    /**
-     * Sets write timeout.
-     *
-     * @param seconds Integer.
-     */
-    public static void setWriteTimeout(int seconds) {
-        writeTimeout = seconds;
-    }
-
-    /**
-     * Sets read timeout.
-     *
-     * @param seconds Integer.
-     */
-    public static void setReadTimeout(int seconds) {
-        readTimeout = seconds;
     }
 
     /**

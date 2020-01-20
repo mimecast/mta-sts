@@ -1,14 +1,18 @@
 package com.mimecast.mtasts.assets;
 
 import com.mimecast.mtasts.cache.PolicyCache;
+import com.mimecast.mtasts.client.HttpsResponse;
+import com.mimecast.mtasts.config.Config;
+import com.mimecast.mtasts.config.ConfigHandler;
+import com.mimecast.mtasts.stream.LineInputStream;
 import com.mimecast.mtasts.util.Pair;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.security.cert.Certificate;
 import java.time.Instant;
@@ -28,7 +32,7 @@ import java.util.List;
  * @author "Vlad Marian" <vmarian@mimecast.com>
  * @link http://mimecast.com Mimecast
  */
-public final class StsPolicy {
+public final class StsPolicy extends ConfigHandler {
     private static final Logger log = LogManager.getLogger(StsPolicy.class);
 
     /**
@@ -44,7 +48,17 @@ public final class StsPolicy {
     /**
      * Policy string.
      */
-    private final String policy;
+    private String policy;
+
+    /**
+     * Response instance.
+     */
+    private HttpsResponse response;
+
+    /**
+     * StsPolicyValidator instance.
+     */
+    private final StsPolicyValidator validator = new StsPolicyValidator();
 
     /**
      * Certificates chain list.
@@ -72,24 +86,6 @@ public final class StsPolicy {
     private int maxAge;
 
     /**
-     * Max age MAX integer.
-     * <p>365.25 days / ~ 1 year.
-     */
-    private static int maxAgeMax = 31557600;
-
-    /**
-     * Max age MIN integer.
-     * <p>7 days / 1 week.
-     */
-    private static int maxAgeMin = 604800;
-
-    /**
-     * Max age SOFT MIN integer.
-     * <p>1 day.
-     */
-    private static int maxAgeMinSoft = 86400;
-
-    /**
      * Fetch time long.
      */
     private long fetchTime = 0L;
@@ -100,22 +96,19 @@ public final class StsPolicy {
     private boolean cached;
 
     /**
-     * Constructs a new StsPolicy instance with given record and policy.
+     * Constructs a new StsPolicy instance with given record and HTTP response.
      * <p>Requires a fresh StsRecord instance to construct so the pair can be cached together.
      * <p>While the record isn't used within it is required for update check.
      * <p>Whenever the policy is to be used a new record should be fetched to ensure the policy was not updated by comparing cached and new record IDs.
      * <p>The parser will not except on parsing so it should always be validated via the provided isValid() method.
      *
      * @param record StsRecord instance.
-     * @param policy Policy string.
+     * @param response HttpsResponse instance.
      */
-    public StsPolicy(StsRecord record, String policy) {
+    public StsPolicy(StsRecord record, HttpsResponse response) {
         this.record = record;
-        this.policy = policy;
+        this.response = response;
         this.fetchTime = Instant.now().getEpochSecond();
-
-        List<Pair> pairs = parse(policy);
-        makePolicy(pairs);
     }
 
     /**
@@ -127,31 +120,70 @@ public final class StsPolicy {
      */
     public StsPolicy(String extendedPolicy) {
         this.policy = extendedPolicy;
+    }
 
-        List<Pair> pairs = parse(extendedPolicy);
-        makePolicy(pairs);
-        makeRecord(pairs);
+    /**
+     * Sets config.
+     *
+     * @param config Config instance.
+     * @return Self.
+     */
+    @Override
+    public StsPolicy setConfig(Config config) {
+        super.setConfig(config);
+        return this;
+    }
+
+    /**
+     * Make policy.
+     *
+     * @return Self.
+     */
+    public StsPolicy make() {
+        // Validate HTTP response and policy body.
+        if (response != null) {
+            this.policy = validator.getPolicy(response, config);
+
+            try {
+                certificates = response.getPeerCertificates();
+            } catch (Exception e) {
+                log.error("Handshake certificate chain not found");
+            }
+        }
+
+        // Make.
+        if (policy != null) {
+            List<Pair> pairs = parse();
+            makePolicy(pairs);
+
+            if (record == null) {
+                makeRecord(pairs);
+            }
+        }
+
+        return this;
     }
 
     /**
      * Parse data.
      *
-     * @param data String key, value data.
      * @return List of Pair of String, String.
      */
-    private List<Pair> parse(String data) {
+    private List<Pair> parse() {
         List<Pair> pairs = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new StringReader(data))) {
-            String line;
+        try (LineInputStream br = new LineInputStream(new ByteArrayInputStream(policy.getBytes(StandardCharsets.UTF_8)))) {
+            byte[] line;
             while ((line = br.readLine()) != null) {
-                Pair pair = new Pair(line);
+                validator.validateLine(line, config);
+
+                Pair pair = new Pair(new String(line));
                 if (pair.isValid()) {
                     pairs.add(pair);
                 }
             }
         } catch (IOException e) {
-            log.error("Unable to parse data: {}", e.getMessage());
+            log.error("Unable to read policy lines: {}", e.getMessage());
         }
 
         return pairs;
@@ -182,19 +214,25 @@ public final class StsPolicy {
                     break;
 
                 case "max_age":
-                    maxAge = Math.min(Integer.parseInt(entry.getValue()), maxAgeMax);
+                    maxAge = Integer.parseInt(entry.getValue());
+                    if (maxAge > config.getPolicyMaxAge()) {
+                        validator.addWarning("Max age more than config max: " +  maxAge + " > " + config.getPolicyMaxAge());
+                        maxAge = Math.min(maxAge, config.getPolicyMaxAge());
+                    }
                     break;
                 default:
                     break;
             }
         }
 
-        // Limitations
-        if (mode == StsMode.ENFORCE) {
-            maxAge = Math.max(maxAge, maxAgeMin);
+        // Limitations.
+        if (mode == StsMode.ENFORCE && maxAge < config.getPolicyMinAge()) {
+            validator.addWarning("Max age less than config min: " +  maxAge + " < " + config.getPolicyMinAge());
+            maxAge = Math.max(maxAge, config.getPolicyMinAge());
         }
-        else {
-            maxAge = Math.max(maxAge, maxAgeMinSoft);
+        else if(mode == StsMode.TESTING && maxAge < config.getPolicySoftMinAge()) {
+            validator.addWarning("Max age less than config soft min: " +  maxAge + " < " + config.getPolicySoftMinAge());
+            maxAge = Math.max(maxAge, config.getPolicySoftMinAge());
         }
     }
 
@@ -214,7 +252,7 @@ public final class StsPolicy {
                     try {
                         fetchTime = Long.parseLong(entry.getValue());
                     } catch (NumberFormatException e) {
-                        log.error("Inavlid number for fetch_time");
+                        log.error("Policy fetch_time invalid");
                     }
                     break;
 
@@ -234,24 +272,14 @@ public final class StsPolicy {
             }
         }
 
-        // Create record if domain, record_id and fetch_time set
+        // Create record if domain, record_id and fetch_time set.
         if (domain != null && recordId != null && fetchTime > 0) {
             record = new StsRecord(domain, "v=" + version + "; id=" + recordId + ";");
         }
-        // Throw runtime exception
+        // Throw runtime exception.
         else {
-            throw new InvalidParameterException("Missing domain, record_id and/or fetch_time");
+            throw new InvalidParameterException("Record missing domain, record_id and/or fetch_time");
         }
-    }
-
-    /**
-     * Sets peer certificates.
-     * <p>Will only be called when the policy if fetched live with a trust manager implementing a trust store.
-     *
-     * @param certificates List of Certificate instances.
-     */
-    public void setPeerCertificates(List<Certificate> certificates) {
-        this.certificates = certificates;
     }
 
     /**
@@ -303,6 +331,15 @@ public final class StsPolicy {
     }
 
     /**
+     * Gets policy validator.
+     *
+     * @return Policy string.
+     */
+    public StsPolicyValidator getValidator() {
+        return validator;
+    }
+
+    /**
      * Is valid.
      * <p>Is mode is not null or NONE?
      * <p>Is max age defined and greater than 0?
@@ -311,7 +348,7 @@ public final class StsPolicy {
      * @return Boolean.
      */
     public boolean isValid() {
-        return mode != StsMode.NONE && maxAge > 0 && !mxMasks.isEmpty();
+        return validator.getErrors().isEmpty() && mode != StsMode.NONE && maxAge > 0 && !mxMasks.isEmpty();
     }
 
     /**
@@ -379,48 +416,6 @@ public final class StsPolicy {
      */
     public int getMaxAge() {
         return maxAge;
-    }
-
-    /**
-     * Gets max age MAX limit.
-     */
-    public static int getMaxAgeMax() {
-        return maxAgeMax;
-    }
-
-    /**
-     * Sets max age MAX limit.
-     */
-    public static void setMaxAgeMax(int maxAgeMax) {
-        StsPolicy.maxAgeMax = maxAgeMax;
-    }
-
-    /**
-     * Gets max age MIN limit.
-     */
-    public static int getMaxAgeMin() {
-        return maxAgeMin;
-    }
-
-    /**
-     * Sets max age MIN limit.
-     */
-    public static void setMaxAgeMin(int maxAgeMin) {
-        StsPolicy.maxAgeMin = maxAgeMin;
-    }
-
-    /**
-     * Gets max age SOFT MIN limit.
-     */
-    public static int getMaxAgeMinSoft() {
-        return maxAgeMinSoft;
-    }
-
-    /**
-     * Sets max age SOFT MIN limit.
-     */
-    public static void setMaxAgeMinSoft(int maxAgeMinSoft) {
-        StsPolicy.maxAgeMinSoft = maxAgeMinSoft;
     }
 
     /**

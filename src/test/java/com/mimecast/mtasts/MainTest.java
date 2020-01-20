@@ -2,6 +2,7 @@ package com.mimecast.mtasts;
 
 import com.google.gson.Gson;
 import com.mimecast.mtasts.util.LocalDnsResolver;
+import com.mimecast.mtasts.util.LocalHttpsResponse;
 import com.mimecast.mtasts.util.LocalHttpsServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,7 +30,7 @@ class MainTest {
 
     private static final String response = "version: STSv1\r\n" +
             "mode: enforce\r\n" +
-            "mx: service-alpha-inbound-*.mimecast.com\r\n" +
+            "mx: *.mimecast.com\r\n" +
             "max_age: 86400\r\n";
 
     @BeforeAll
@@ -44,7 +45,8 @@ class MainTest {
         }});
 
         // Configure mock server
-        LocalHttpsServer.put("mimecast.com", response);
+        LocalHttpsServer.put("mimecast.com", new LocalHttpsResponse()
+                .setResponseString(response));
 
         // Start mock server
         localHttpsServer = new LocalHttpsServer();
@@ -106,6 +108,7 @@ class MainTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void shortArgs() throws InstantiationException {
         List<String> argv = new ArrayList<>();
 
@@ -121,8 +124,8 @@ class MainTest {
         assertEquals("MX:\t\tservice-alpha-inbound-a.mimecast.com", logs.get(2));
         assertEquals("Match:\ttrue", logs.get(3));
 
-        Map expected = new Gson().fromJson("{\"stsPolicy\":{\"mode\":\"enforce\",\"max_age\":\"604800\",\"valid\":\"true\",\"mx\":\"service-alpha-inbound-*.mimecast.com\",\"version\":\"STSv1\"},\"tlsRecord\":{\"valid\":\"true\",\"version\":\"TLSRPTv1\",\"rua\":\"mailto:tlsrpt@mimecast.com\"},\"mxList\":[{\"entry\":\"service-alpha-inbound-a.mimecast.com\",\"priority\":\"1\"},{\"entry\":\"service-alpha-inbound-b.mimecast.com\",\"priority\":\"1\"}],\"stsRecord\":{\"valid\":\"true\",\"location\":\"_mta-sts.mimecast.com\",\"id\":\"19840507T234501\",\"version\":\"STSv1\"}}", Map.class);
-        Map actual = new Gson().fromJson(logs.get(5), Map.class);
+        Map<String, Object> expected = new Gson().fromJson("{\"stsPolicy\":{\"mode\":\"enforce\",\"max_age\":\"604800\",\"valid\":\"true\",\"mx\":\"*.mimecast.com\",\"version\":\"STSv1\"},\"certificateChain\":[],\"tlsRecord\":{\"valid\":\"true\",\"version\":\"TLSRPTv1\",\"rua\":\"mailto:tlsrpt@mimecast.com\"},\"mxList\":[{\"entry\":\"service-alpha-inbound-a.mimecast.com\",\"priority\":\"1\"},{\"entry\":\"service-alpha-inbound-b.mimecast.com\",\"priority\":\"1\"}],\"stsRecord\":{\"valid\":\"true\",\"location\":\"_mta-sts.mimecast.com\",\"id\":\"19840507T234501\",\"version\":\"STSv1\"}}", Map.class);
+        Map<String, Object> actual = new Gson().fromJson(logs.get(5), Map.class);
         assertEquals(expected, actual);
     }
 
@@ -140,21 +143,5 @@ class MainTest {
         assertEquals("Match MX", logs.get(0));
         assertEquals("MX:\t\tservice-alpha-inbound-a.mimecast.com", logs.get(2));
         assertEquals("Match:\ttrue", logs.get(3));
-    }
-
-    @Test
-    void noMatch() throws InstantiationException {
-        List<String> argv = new ArrayList<>();
-
-        argv.add("--domain");
-        argv.add("mimecast.com");
-        argv.add("--mx");
-        argv.add("service-alpha-a.mimecast.com");
-
-        List<String> logs = MainMock.main(argv.toArray(new String[0]), localHttpsServer.getPort());
-
-        assertEquals("Match MX", logs.get(0));
-        assertEquals("MX:\t\tservice-alpha-a.mimecast.com", logs.get(2));
-        assertEquals("Match:\tfalse", logs.get(3));
     }
 }

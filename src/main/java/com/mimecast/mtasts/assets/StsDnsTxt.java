@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
- * Strict Transport Security abstract.
+ * Strict Transport Security DNS TXT Abstract.
  * <p>Parser for DNS TXT record contents.
  *
  * @see StsRecord
@@ -34,7 +34,7 @@ public abstract class StsDnsTxt {
     StsDnsTxt(String record) {
         this.record = record.replaceAll("^\"|\"$", "");
 
-        // Relaxed tokenize by semicolon and space
+        // Relaxed tokenize by semicolon and space.
         StringTokenizer tokenizer = new StringTokenizer(this.record, ";| ");
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();

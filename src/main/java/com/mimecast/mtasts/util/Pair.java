@@ -1,5 +1,8 @@
 package com.mimecast.mtasts.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Pair key/value store.
  * <p>Takes a single string input and splits by <i>=</i> (equals) character.
@@ -9,6 +12,7 @@ package com.mimecast.mtasts.util;
  * @link http://mimecast.com Mimecast
  */
 public class Pair {
+    private static final Logger log = LogManager.getLogger(Pair.class);
 
     /**
      * Key string.
@@ -23,10 +27,10 @@ public class Pair {
     /**
      * Constructs a new Pair instance with given string.
      *
-     * @param data Key=value string.
+     * @param key: value
      */
     public Pair(String data) {
-        String[] splits = data.split(":");
+        String[] splits = data.trim().split(":");
         if (splits.length == 2) {
             this.key = splits[0].trim();
             this.value = splits[1].trim();
@@ -57,7 +61,12 @@ public class Pair {
      * @return Boolean.
      */
     public boolean isValid() {
-        return !key.isEmpty() &&  !value.isEmpty();
+        if (key.equals("mx") && value.contains("*") && !value.startsWith("*")) {
+            log.error("Policy MX wildcard is not left-most label within the identifier");
+            return false;
+        }
+
+        return !key.isEmpty() && !value.isEmpty();
     }
 
     /**
@@ -67,6 +76,6 @@ public class Pair {
      */
     @Override
     public String toString() {
-        return key + "=" + value;
+        return !key.isEmpty() ? key + ": " + value : "";
     }
 }

@@ -56,9 +56,9 @@ public class LocalDnsResolver implements Resolver {
                 try {
                     response = loop(question.getName(), records, question.getType());
                 } catch (TextParseException e) {
-                    log.error("Cannot parse record: {}", e.getMessage());
+                    log.error("Record cannot be parsed: {}", e.getMessage());
                 } catch (UnknownHostException e) {
-                    log.error("Cannot resolve record: {}", e.getMessage());
+                    log.error("Record host could not be resolved: {}", e.getMessage());
                 }
             }
         }
@@ -103,8 +103,8 @@ public class LocalDnsResolver implements Resolver {
                 }
                 break;
             default:
-                log.fatal("Unsupported record type");
-                throw new IllegalArgumentException("Unsupported record type");
+                log.fatal("Record type unsupported");
+                throw new IllegalArgumentException("Record type unsupported");
         }
 
         return response;
@@ -123,7 +123,7 @@ public class LocalDnsResolver implements Resolver {
         answer.getHeader().setOpcode(question.getHeader().getOpcode());
         answer.addRecord(question.getQuestion(), 0);
 
-        // Answer
+        // Answer.
         List<Record> records = lookup(question.getQuestion());
         if (!records.isEmpty()) {
             for (Record record : records) {

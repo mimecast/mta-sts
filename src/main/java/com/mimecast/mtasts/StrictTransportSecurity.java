@@ -5,10 +5,8 @@ import com.mimecast.mtasts.assets.StsPolicy;
 import com.mimecast.mtasts.assets.StsRecord;
 import com.mimecast.mtasts.assets.StsReport;
 import com.mimecast.mtasts.cache.PolicyCache;
-import com.mimecast.mtasts.client.DnsRecordClient;
-import com.mimecast.mtasts.client.HttpsPolicyClient;
-import com.mimecast.mtasts.client.OkHttpsPolicyClient;
-import com.mimecast.mtasts.client.XBillDnsRecordClient;
+import com.mimecast.mtasts.client.*;
+import com.mimecast.mtasts.config.Config;
 import com.mimecast.mtasts.exception.BadPolicyException;
 import com.mimecast.mtasts.exception.BadRecordException;
 import com.mimecast.mtasts.exception.NoRecordException;
@@ -56,7 +54,7 @@ public class StrictTransportSecurity {
     /**
      * Constructs a new StrictTransportSecurity instance.
      * <p>Cache can be null.
-     * <p>For testing.
+     * <p>For testing and CLI.
      *
      * @param dnsRecordClient   DnsRecordClient instance.
      * @param httpsPolicyClient HttpsPolicyClient instance.
@@ -86,7 +84,7 @@ public class StrictTransportSecurity {
     }
 
     /**
-     * Gets policy.
+     * Gets policy with given domain string.
      * <p>Fetches DNS record every time.
      * <p>Checks record is valid.
      * <p>Tryes to get policy from cache.
@@ -95,44 +93,63 @@ public class StrictTransportSecurity {
      * @param domain Domain string.
      * @return Optional of StsPolicy instance.
      * @throws ValidatorException Domain provided is invalid.
-     * @throws BadPolicyException    HTTPS policy is invalid or not found.
-     * @throws BadRecordException    DNS record is invalid or not found.
+     * @throws BadPolicyException HTTPS policy is invalid or not found.
+     * @throws BadRecordException DNS record is invalid or not found.
      */
     public Optional<StsPolicy> getPolicy(String domain) throws ValidatorException, NoRecordException, BadRecordException, BadPolicyException {
+        return getPolicy(domain, null);
+    }
+
+    /**
+     * Gets policy with given domain string and config instance.
+     * <p>Fetches DNS record every time.
+     * <p>Checks record is valid.
+     * <p>Tryes to get policy from cache.
+     * <p>If policy is not in cache will fetch and put it in cache.
+     * <p>Config instance can be used to modify validation checks.
+     *
+     * @param domain Domain string.
+     * @param config Config instance.
+     * @return Optional of StsPolicy instance.
+     * @throws ValidatorException Domain provided is invalid.
+     * @throws BadPolicyException HTTPS policy is invalid or not found.
+     * @throws BadRecordException DNS record is invalid or not found.
+     */
+    public Optional<StsPolicy> getPolicy(String domain, Config config) throws ValidatorException, NoRecordException, BadRecordException, BadPolicyException {
         StsPolicy policy;
 
-        // Validate domain
+        // Validate domain.
         if (DomainValidator.getInstance(false).isValid(domain)) {
 
-            // Get DNS TXT record
+            // Get DNS TXT record.
             Optional<StsRecord> optional = dnsRecordClient.getStsRecord(domain);
             if (optional.isPresent() && optional.get().isValid()) {
-                log.info("Found valid record");
+                log.info("Record found and valid");
 
-                // Search policy in cache or fetch from HTTPS
-                policy = getPolicy(optional.get());
+                // Search policy in cache or fetch from HTTPS.
+                policy = getPolicy(optional.get(), config);
 
-                // Validate policy
-                if (policy == null || !policy.isValid() || policy.isExpired()) {
-                    throw new BadPolicyException("Invalid HTTP policy for " + domain);
+                // Validate policy.
+                if (!policy.isValid() || policy.isExpired()) {
+                    throw new BadPolicyException("Policy invalid for: " + domain);
                 }
             }
             else if (!optional.isPresent()) {
                 log.warn("Record not found, searching cache for policy");
 
-                // Search policy in cache
+                // Search policy in cache.
                 policy = searchPolicyCache(domain);
 
                 if (policy == null) {
-                    throw new NoRecordException("Not found DNS record for: " + domain);
+                    throw new NoRecordException("Record not found for: " + domain);
                 }
             }
             else {
-                throw new BadRecordException("Invalid DNS record for: " + domain);
+                throw new BadRecordException("Record invalid for: " + domain);
             }
         }
         else {
-            throw new ValidatorException("Invalid domain of: " + domain);
+            throw new ValidatorException("Domain invalid: " + domain);
         }
 
         return Optional.of(fetchRptRecord(policy));
@@ -142,22 +159,16 @@ public class StrictTransportSecurity {
      * Gets policy from cache if any.
      *
      * @param record StsRecord instance.
+     * @param config Config instance.
      * @return StsPolicy instance.
      */
-    private StsPolicy getPolicy(StsRecord record) {
-        StsPolicy policy;
+    private StsPolicy getPolicy(StsRecord record, Config config) {
+        // Search policy in cache first.
+        StsPolicy policy = searchPolicyCache(record);
 
-        // Search policy in cache first
-        policy = searchPolicyCache(record);
-
-        // Fetch policy if not in cache or expired
+        // Fetch policy if not in cache or expired.
         if (policy == null || policy.isExpired()) {
-            StsPolicy fetched = fetchPolicyHttps(record);
-
-            // Preserve expired if fetched null
-            if (fetched != null) {
-                policy = fetched;
-            }
+            return fetchPolicyHttps(record, config);
         }
 
         return policy;
@@ -205,20 +216,25 @@ public class StrictTransportSecurity {
      * Gets policy from well known HTTPS address.
      *
      * @param record StsRecord instance.
+     * @param config Config instance.
      * @return StsPolicy instance.
      */
-    private StsPolicy fetchPolicyHttps(StsRecord record) {
-        Optional<StsPolicy> optional = httpsPolicyClient.getPolicy(record);
+    private StsPolicy fetchPolicyHttps(StsRecord record, Config config) {
+        HttpsResponse response = httpsPolicyClient.getPolicy(record);
 
-        if (optional.isPresent()) {
-            if (cache != null) {
-                cache.put(optional.get());
-            }
+        StsPolicy policy = new StsPolicy(record, response);
 
-            return optional.get();
+        if (config != null) {
+            policy.setConfig(config);
         }
 
-        return null;
+        policy.make();
+
+        if (policy.isValid() && cache != null) {
+            cache.put(policy);
+        }
+
+        return policy;
     }
 
     /**

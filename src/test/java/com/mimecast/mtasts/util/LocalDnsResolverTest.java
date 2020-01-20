@@ -69,7 +69,7 @@ class LocalDnsResolverTest {
         assertTrue(lookup("mimecast.com.", Type.NS)[2].rdataToString().matches("^dns0[0-9]\\.mimecast\\.com\\.$"));
         assertTrue(lookup("mimecast.com.", Type.NS)[3].rdataToString().matches("^dns0[0-9]\\.mimecast\\.com\\.$"));
 
-        assertEquals("1 service-alpha-inbound-b.mimecast.com.", lookup("mimecast.com.", Type.MX)[0].rdataToString());
+        assertEquals("1 service-alpha-inbound-a.mimecast.com.", lookup("mimecast.com.", Type.MX)[0].rdataToString());
 
         assertEquals("91.220.42.231", lookup("service-alpha-inbound-a.mimecast.com", Type.A)[0].rdataToString());
         assertEquals("195.130.217.231", lookup("service-alpha-inbound-b.mimecast.com", Type.A)[0].rdataToString());

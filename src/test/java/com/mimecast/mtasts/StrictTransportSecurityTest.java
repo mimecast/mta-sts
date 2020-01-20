@@ -9,6 +9,7 @@ import com.mimecast.mtasts.exception.BadRecordException;
 import com.mimecast.mtasts.trust.PermissiveTrustManager;
 import com.mimecast.mtasts.util.LocalDnsResolver;
 import com.mimecast.mtasts.util.LocalHttpsPolicyClient;
+import com.mimecast.mtasts.util.LocalHttpsResponse;
 import com.mimecast.mtasts.util.LocalHttpsServer;
 import org.apache.commons.validator.ValidatorException;
 import org.junit.jupiter.api.AfterAll;
@@ -35,7 +36,7 @@ class StrictTransportSecurityTest {
 
     private static final String response = "version: STSv1\r\n" +
             "mode: enforce\r\n" +
-            "mx: service-alpha-inbound-*.mimecast.com\r\n" +
+            "mx: *.mimecast.com\r\n" +
             "max_age: 86400\r\n";
 
     @BeforeAll
@@ -49,9 +50,13 @@ class StrictTransportSecurityTest {
         LocalDnsResolver.put("_mta-sts.mimecast.uk", Type.TXT, new ArrayList<String>() {{ add( "v=STSv1; id=19840507T234501;" ); }});
 
         // Configure mock server
-        LocalHttpsServer.put("mimecast.com", response);
-        LocalHttpsServer.put("mimecast.org", null);
-        LocalHttpsServer.put("mimecast.uk", response);
+        LocalHttpsServer.put("mimecast.com", new LocalHttpsResponse()
+                .setResponseString(response));
+
+        LocalHttpsServer.put("mimecast.org", new LocalHttpsResponse());
+
+        LocalHttpsServer.put("mimecast.uk", new LocalHttpsResponse()
+                .setResponseString(response));
 
         // Start mock server
         localHttpsServer = new LocalHttpsServer();

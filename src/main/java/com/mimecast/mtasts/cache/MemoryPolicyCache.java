@@ -24,7 +24,7 @@ public class MemoryPolicyCache extends PolicyCache {
     private static final LinkedHashMap<String, StsPolicy> map = new LinkedHashMap<String, StsPolicy>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, StsPolicy> eldest) {
-            return this.size() > 100; // Limit
+            return this.size() > 100; // Limit.
         }
     };
 

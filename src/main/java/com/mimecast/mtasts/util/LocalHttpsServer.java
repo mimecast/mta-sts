@@ -30,15 +30,15 @@ public class LocalHttpsServer {
     /**
      * HttpsServer database.
      */
-    private static final Map<String, String> map = new HashMap<>();
+    private static final Map<String, LocalHttpsResponse> map = new HashMap<>();
 
     /**
      * Put entries in database.
      *
      * @param path     HTTP request path.
-     * @param response HTTP response string.
+     * @param response LocalHttpsResponse instance.
      */
-    public static void put(String path, String response) {
+    public static void put(String path, LocalHttpsResponse response) {
         map.put(path, response);
     }
 
@@ -58,27 +58,27 @@ public class LocalHttpsServer {
      * @throws KeyManagementException    Key management exception.
      */
     public LocalHttpsServer() throws IOException, NoSuchAlgorithmException, KeyStoreException, CertificateException, UnrecoverableKeyException, KeyManagementException {
-        // SSL context
+        // SSL context.
         SSLContext ctx = SSLContext.getInstance("TLSv1.2");
 
-        // Key manager
+        // Key manager.
         char[] storePass = "avengers".toCharArray();
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
         KeyStore keyStore = KeyStore.getInstance("JKS");
         keyStore.load(new FileInputStream("src/test/resources/keystore.jks"), storePass);
         keyManagerFactory.init(keyStore, storePass);
 
-        // Trust manager
+        // Trust manager.
         TrustManager[] tm = new TrustManager[] { new PermissiveTrustManager() };
         ctx.init(keyManagerFactory.getKeyManagers(), tm, null);
 
-        // Server
+        // Server.
         httpServer = HttpsServer.create(new InetSocketAddress(0), 0);
         httpServer.setHttpsConfigurator(new HttpsConfigurator(ctx));
 
-        for (Map.Entry<String, String> entry : map.entrySet()) {
+        for (Map.Entry<String, LocalHttpsResponse> entry : map.entrySet()) {
             String path = entry.getKey();
-            String response = entry.getValue();
+            String response = entry.getValue().getResponseString();
 
             httpServer.createContext("/" + path, exchange -> {
                 if (response != null) {

@@ -1,9 +1,6 @@
 package com.mimecast.mtasts.client;
 
-import com.mimecast.mtasts.assets.StsPolicy;
 import com.mimecast.mtasts.assets.StsRecord;
-
-import java.util.Optional;
 
 /**
  * Https Policy Client.
@@ -21,7 +18,7 @@ public interface HttpsPolicyClient {
      * <p>Requires a fresh StsRecord instance to get the domain from and construct the StsPolicy instance.
      *
      * @param record StsRecord instance.
-     * @return Optional of StsPolicy instance.
+     * @return OkHttpsResponse instance.
      */
-    Optional<StsPolicy> getPolicy(StsRecord record);
+    OkHttpsResponse getPolicy(StsRecord record);
 }

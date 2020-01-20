@@ -49,7 +49,7 @@ public abstract class PolicyCache {
 
             if (policy != null) {
 
-                // Validate record and cache policy ID match
+                // Validate record and cache policy ID match.
                 if (policy.getRecord().getId().equals(record.getId())) {
                     policy.setCached(true);
                     return Optional.of(policy);

@@ -2,8 +2,11 @@ package com.mimecast.mtasts.cache;
 
 import com.mimecast.mtasts.assets.StsPolicy;
 import com.mimecast.mtasts.assets.StsRecord;
+import com.mimecast.mtasts.client.HttpsResponse;
+import com.mimecast.mtasts.client.HttpsResponseMock;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,10 +17,22 @@ class MemoryPolicyCacheTest {
     @Test
     void valid() {
         StsRecord record = new StsRecord("mimecast.com", "v=STSv1; id=19840507T234501;");
-        StsPolicy policy = new StsPolicy(record, "version: STSv1\r\n" +
+
+        String policyBody = "version: STSv1\r\n" +
                 "mode: enforce\r\n" +
-                "mx: service-alpha-inbound-*.mimecast.com\r\n" +
-                "max_age: 86400\r\n");
+                "mx: *.mimecast.com\r\n" +
+                "max_age: 86400\r\n";
+
+        HttpsResponseMock httpsResponse = new HttpsResponseMock()
+                .setSuccessful(true)
+                .setCode(200)
+                .setMessage("OK")
+                .setHandshake(true)
+                .setPeerCertificates(new ArrayList<>())
+                .putHeader("Content-Type", "text/plain")
+                .setBody(policyBody);
+
+        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
 
         MemoryPolicyCache cache = new MemoryPolicyCache();
         cache.put(policy);
@@ -31,7 +46,7 @@ class MemoryPolicyCacheTest {
         assertEquals(604800, cachePolicy.getMaxAge());
 
         assertEquals(1, cachePolicy.getMxMasks().size());
-        assertEquals("service-alpha-inbound-*.mimecast.com", cachePolicy.getMxMasks().get(0));
+        assertEquals("*.mimecast.com", cachePolicy.getMxMasks().get(0));
 
         assertTrue(cachePolicy.getRecord().isValid());
         assertEquals("STSv1", cachePolicy.getRecord().getVersion());
@@ -41,10 +56,22 @@ class MemoryPolicyCacheTest {
     @Test
     void invalid() {
         StsRecord record = new StsRecord("mimecast.com", "v=STSv1; id=19840507T234501;");
-        StsPolicy policy = new StsPolicy(record, "version: STSv1\r\n" +
+
+        String policyBody = "version: STSv1\r\n" +
                 "mode: enforce\r\n" +
-                "mx: service-alpha-inbound-*.mimecast.com\r\n" +
-                "max_age: 86400\r\n");
+                "mx: *.mimecast.com\r\n" +
+                "max_age: 86400\r\n";
+
+        HttpsResponseMock httpsResponse = new HttpsResponseMock()
+                .setSuccessful(true)
+                .setCode(200)
+                .setMessage("OK")
+                .setHandshake(true)
+                .setPeerCertificates(new ArrayList<>())
+                .putHeader("Content-Type", "text/plain")
+                .setBody(policyBody);
+
+        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
 
         MemoryPolicyCache cache = new MemoryPolicyCache();
         cache.put(policy);
@@ -76,14 +103,29 @@ class MemoryPolicyCacheTest {
         MemoryPolicyCache cache = new MemoryPolicyCache();
 
         StsRecord record;
+        String policyBody;
+        HttpsResponse httpsResponse;
         StsPolicy policy;
 
         for (int i = 0; i < 105; i++) {
             record = new StsRecord("mimecast" + i + ".com", "v=STSv1; id=" + i + ";");
-            policy = new StsPolicy(record, "version: STSv1\r\n" +
+
+            policyBody = "version: STSv1\r\n" +
                     "mode: enforce\r\n" +
-                    "mx: service-alpha-inbound-*.mimecast.com\r\n" +
-                    "max_age: 86400\r\n");
+                    "mx: *.mimecast.com\r\n" +
+                    "max_age: 86400\r\n";
+
+            httpsResponse = new HttpsResponseMock()
+                    .setSuccessful(true)
+                    .setCode(200)
+                    .setMessage("OK")
+                    .setHandshake(true)
+                    .setPeerCertificates(new ArrayList<>())
+                    .putHeader("Content-Type", "text/plain")
+                    .setBody(policyBody);
+
+            policy = new StsPolicy(record, httpsResponse).make();
+
             cache.put(policy);
         }
 
@@ -93,10 +135,22 @@ class MemoryPolicyCacheTest {
     @Test
     void expired() {
         StsRecord record = new StsRecord("mimecast.com", "v=STSv1; id=19840507T234501;");
-        StsPolicy policy = new StsPolicy(record, "version: STSv1\r\n" +
+
+        String policyBody = "version: STSv1\r\n" +
                 "mode: enforce\r\n" +
-                "mx: service-alpha-inbound-*.mimecast.com\r\n" +
-                "max_age: 0\r\n");
+                "mx: *.mimecast.com\r\n" +
+                "max_age: 0\r\n";
+
+        HttpsResponseMock httpsResponse = new HttpsResponseMock()
+                .setSuccessful(true)
+                .setCode(200)
+                .setMessage("OK")
+                .setHandshake(true)
+                .setPeerCertificates(new ArrayList<>())
+                .putHeader("Content-Type", "text/plain")
+                .setBody(policyBody);
+
+        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
 
         MemoryPolicyCache cache = new MemoryPolicyCache();
         cache.put(policy);

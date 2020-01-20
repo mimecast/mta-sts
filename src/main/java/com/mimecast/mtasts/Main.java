@@ -72,7 +72,7 @@ public class Main {
      * @param args String array.
      */
     Main(String[] args) {
-        // Disable logging
+        // Disable logging.
         Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.OFF);
 
         // Parse options.
@@ -87,12 +87,12 @@ public class Main {
                 String domain = cmd.getOptionValue("domain");
 
                 try {
-                    // Get policy
+                    // Get policy.
                     Optional<StsPolicy> optional = strictTransportSecurity.getPolicy(domain);
                     if (optional.isPresent()) {
                         StsPolicy policy = optional.get();
 
-                        // Match MX
+                        // Match MX.
                         if (cmd.hasOption("mx")) {
                             log("Match MX");
                             log("- - - - - - - - - - - - - - - - - - - - - - - - -");
@@ -101,17 +101,17 @@ public class Main {
                             log("- - - - - - - - - - - - - - - - - - - - - - - - -");
                         }
 
-                        // Policy details JSON
+                        // Policy details JSON.
                         if (cmd.hasOption("json") || cmd.hasOption("file")) {
                             Map<String, Object> jsonMap = getJson(policy);
 
-                            // Print
+                            // Print.
                             if (cmd.hasOption("json")) {
                                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                                 log(gson.toJson(jsonMap));
                             }
 
-                            // Save to file
+                            // Save to file.
                             if (cmd.hasOption("file")) {
                                 saveJson(jsonMap, cmd.getOptionValue("file"));
                             }
@@ -144,7 +144,7 @@ public class Main {
     private Map<String, Object> getJson(StsPolicy policy) {
         Map<String, Object> json = new HashMap<>();
 
-        // MTA-STS Policy
+        // MTA-STS Policy.
         Map<String, String> stsPolicy = new HashMap<>();
         stsPolicy.put("version", policy.getVersion());
         stsPolicy.put("mode", policy.getMode().toString());
@@ -153,7 +153,7 @@ public class Main {
         stsPolicy.put("valid", String.valueOf(policy.isValid()));
         json.put("stsPolicy", stsPolicy);
 
-        // MTA-STS Record
+        // MTA-STS Record.
         Map<String, String> stsRecord = new HashMap<>();
         stsRecord.put("location", "_mta-sts." + policy.getRecord().getDomain());
         stsRecord.put("version", policy.getRecord().getVersion());
@@ -161,14 +161,14 @@ public class Main {
         stsRecord.put("valid", String.valueOf(policy.getRecord().isValid()));
         json.put("stsRecord", stsRecord);
 
-        // TLSRPT Record
+        // TLSRPT Record.
         Map<String, String> tlsRecord = new HashMap<>();
         tlsRecord.put("version", policy.getReport().getVersion());
         tlsRecord.put("rua", policy.getReport().getRua().stream().map(String::valueOf).collect(Collectors.joining(", ")));
         tlsRecord.put("valid", String.valueOf(policy.getReport().isValid()));
         json.put("tlsRecord", tlsRecord);
 
-        // MX Records
+        // MX Records.
         List<Map<String, String>> mxList = new ArrayList<>();
         for (DnsRecord record : strictTransportSecurity.getMxRecords(policy.getRecord().getDomain())) {
             Map<String, String> mx = new HashMap<>();
@@ -178,9 +178,9 @@ public class Main {
         }
         json.put("mxList", mxList);
 
-        // Peer certificate chain
+        // Peer certificate chain.
         if (policy.getPeerCertificates() != null) {
-            List<Map> chain = new ArrayList<>();
+            List<Map<String, Object>> chain = new ArrayList<>();
             for (Certificate c : policy.getPeerCertificates()) {
                 try {
                     X509Certificate certificate = (X509Certificate) c;

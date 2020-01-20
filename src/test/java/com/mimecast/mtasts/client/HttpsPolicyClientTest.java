@@ -3,6 +3,7 @@ package com.mimecast.mtasts.client;
 import com.mimecast.mtasts.assets.StsRecord;
 import com.mimecast.mtasts.trust.PermissiveTrustManager;
 import com.mimecast.mtasts.util.LocalHttpsPolicyClient;
+import com.mimecast.mtasts.util.LocalHttpsResponse;
 import com.mimecast.mtasts.util.LocalHttpsServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,14 +18,13 @@ import java.security.cert.CertificateException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 class HttpsPolicyClientTest {
 
     private static LocalHttpsServer localHttpsServer;
 
     private static final String valid = "version: STSv1\r\n" +
             "mode: enforce\r\n" +
-            "mx: service-alpha-inbound-*.mimecast.com\r\n" +
+            "mx: *.mimecast.com\r\n" +
             "max_age: 86400\r\n";
 
     private static final String malformed = "version: STSv1\r\n" +
@@ -34,9 +34,16 @@ class HttpsPolicyClientTest {
     @BeforeAll
     static void before() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException {
         // Configure mock server
-        LocalHttpsServer.put("mimecast.com", valid);
-        LocalHttpsServer.put("mimecast.org", null);
-        LocalHttpsServer.put("mimecast.eu", malformed);
+        LocalHttpsServer.put("mimecast.com", new LocalHttpsResponse()
+                .setResponseString(valid));
+
+        LocalHttpsServer.put("mimecast.org", new LocalHttpsResponse());
+
+        LocalHttpsServer.put("mimecast.eu", new LocalHttpsResponse()
+                .setResponseString(malformed));
+
+        LocalHttpsServer.put("mimecast.de", new LocalHttpsResponse()
+                .setResponseString(""));
 
         // Start mock server
         localHttpsServer = new LocalHttpsServer();
@@ -52,15 +59,31 @@ class HttpsPolicyClientTest {
         StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
         HttpsPolicyClient httpsPolicyClient = new LocalHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort());
 
-        assertEquals(valid, httpsPolicyClient.getPolicy(record).get().toString());
+        HttpsResponse httpsResponse = httpsPolicyClient.getPolicy(record);
+
+        assertTrue(httpsResponse.isSuccessful());
+        assertEquals(200, httpsResponse.getCode());
+        assertEquals("OK", httpsResponse.getMessage());
+        assertTrue(httpsResponse.isHandshake());
+        assertEquals(0, httpsResponse.getPeerCertificates().size());
+        assertEquals("text/plain", httpsResponse.getHeader("Content-Type"));
+        assertEquals(valid, httpsResponse.getBody());
     }
 
     @Test
-    void invalid() {
+    void invalidNone() {
         StsRecord record = new StsRecord("mimecast.net", "\"v=STSv1; id=19840507T234501;\"");
         HttpsPolicyClient httpsPolicyClient = new LocalHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort());
 
-        assertFalse(httpsPolicyClient.getPolicy(record).isPresent());
+        HttpsResponse httpsResponse = httpsPolicyClient.getPolicy(record);
+
+        assertFalse(httpsResponse.isSuccessful());
+        assertEquals(404, httpsResponse.getCode());
+        assertEquals("Not Found", httpsResponse.getMessage());
+        assertTrue(httpsResponse.isHandshake());
+        assertEquals(0, httpsResponse.getPeerCertificates().size());
+        assertEquals("text/html", httpsResponse.getHeader("Content-Type"));
+        assertEquals("<h1>404 Not Found</h1>No context found for request", httpsResponse.getBody());
     }
 
     @Test
@@ -68,22 +91,38 @@ class HttpsPolicyClientTest {
         StsRecord record = new StsRecord("mimecast.org", "\"v=STSv1; id=19840507T234501;\"");
         HttpsPolicyClient httpsPolicyClient = new LocalHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort());
 
-        assertFalse(httpsPolicyClient.getPolicy(record).isPresent());
+        HttpsResponse httpsResponse = httpsPolicyClient.getPolicy(record);
+
+        assertFalse(httpsResponse.isSuccessful());
+        assertEquals(404, httpsResponse.getCode());
+        assertEquals("Not Found", httpsResponse.getMessage());
+        assertTrue(httpsResponse.isHandshake());
+        assertEquals(0, httpsResponse.getPeerCertificates().size());
+        assertNull(httpsResponse.getHeader("Content-Type"));
+        assertEquals("", httpsResponse.getBody());
     }
 
     @Test
-    void invalidMalformed() {
-        StsRecord record = new StsRecord("mimecast.eu", "\"v=STSv1; id=19840507T234501;\"");
+    void invalidEmpty() {
+        StsRecord record = new StsRecord("mimecast.de", "\"v=STSv1; id=19840507T234501;\"");
         HttpsPolicyClient httpsPolicyClient = new LocalHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort());
 
-        assertFalse(httpsPolicyClient.getPolicy(record).isPresent());
+        HttpsResponse httpsResponse = httpsPolicyClient.getPolicy(record);
+
+        assertTrue(httpsResponse.isSuccessful());
+        assertEquals(200, httpsResponse.getCode());
+        assertEquals("OK", httpsResponse.getMessage());
+        assertTrue(httpsResponse.isHandshake());
+        assertEquals(0, httpsResponse.getPeerCertificates().size());
+        assertEquals("text/plain", httpsResponse.getHeader("Content-Type"));
+        assertEquals("", httpsResponse.getBody());
     }
 
     @Test
     void invalidNullRecord() {
         HttpsPolicyClient httpsPolicyClient = new LocalHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort());
 
-        assertFalse(httpsPolicyClient.getPolicy(null).isPresent());
+        assertNull(httpsPolicyClient.getPolicy(null));
     }
 
     @Test
@@ -91,6 +130,6 @@ class HttpsPolicyClientTest {
         StsRecord record = new StsRecord(null, "\"v=STSv1; id=19840507T234501;\"");
         HttpsPolicyClient httpsPolicyClient = new LocalHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort());
 
-        assertFalse(httpsPolicyClient.getPolicy(record).isPresent());
+        assertNull(httpsPolicyClient.getPolicy(record));
     }
 }

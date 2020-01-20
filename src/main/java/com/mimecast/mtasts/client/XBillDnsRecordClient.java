@@ -124,7 +124,7 @@ public class XBillDnsRecordClient implements DnsRecordClient {
             Lookup lookup = new Lookup(uri, type);
             return lookup.run();
         } catch (TextParseException e) {
-            log.error("Could not resolve URI {}: {}", uri, e.getMessage());
+            log.error("Record URI could not resolve: {} - {}", uri, e.getMessage());
         }
 
         return new Record[0];
