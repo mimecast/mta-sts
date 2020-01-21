@@ -204,6 +204,10 @@ public class Main {
                 }
             }
             json.put("certificateChain", chain);
+
+            // Warnings and errors.
+            json.put("warnings", policy.getValidator().getWarnings());
+            json.put("errors", policy.getValidator().getErrors());
         }
 
         return json;

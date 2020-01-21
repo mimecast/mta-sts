@@ -124,9 +124,42 @@ class MainTest {
         assertEquals("MX:\t\tservice-alpha-inbound-a.mimecast.com", logs.get(2));
         assertEquals("Match:\ttrue", logs.get(3));
 
-        Map<String, Object> expected = new Gson().fromJson("{\"stsPolicy\":{\"mode\":\"enforce\",\"max_age\":\"604800\",\"valid\":\"true\",\"mx\":\"*.mimecast.com\",\"version\":\"STSv1\"},\"certificateChain\":[],\"tlsRecord\":{\"valid\":\"true\",\"version\":\"TLSRPTv1\",\"rua\":\"mailto:tlsrpt@mimecast.com\"},\"mxList\":[{\"entry\":\"service-alpha-inbound-a.mimecast.com\",\"priority\":\"1\"},{\"entry\":\"service-alpha-inbound-b.mimecast.com\",\"priority\":\"1\"}],\"stsRecord\":{\"valid\":\"true\",\"location\":\"_mta-sts.mimecast.com\",\"id\":\"19840507T234501\",\"version\":\"STSv1\"}}", Map.class);
-        Map<String, Object> actual = new Gson().fromJson(logs.get(5), Map.class);
-        assertEquals(expected, actual);
+        String expected = "{\n" +
+                "  \"stsPolicy\": {\n" +
+                "    \"mode\": \"enforce\",\n" +
+                "    \"max_age\": \"604800\",\n" +
+                "    \"valid\": \"true\",\n" +
+                "    \"mx\": \"*.mimecast.com\",\n" +
+                "    \"version\": \"STSv1\"\n" +
+                "  },\n" +
+                "  \"certificateChain\": [],\n" +
+                "  \"tlsRecord\": {\n" +
+                "    \"valid\": \"true\",\n" +
+                "    \"version\": \"TLSRPTv1\",\n" +
+                "    \"rua\": \"mailto:tlsrpt@mimecast.com\"\n" +
+                "  },\n" +
+                "  \"mxList\": [\n" +
+                "    {\n" +
+                "      \"entry\": \"service-alpha-inbound-a.mimecast.com\",\n" +
+                "      \"priority\": \"1\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"entry\": \"service-alpha-inbound-b.mimecast.com\",\n" +
+                "      \"priority\": \"1\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"warnings\": [\n" +
+                "    \"Max age less than config min: 86400 \\u003c 604800\"\n" +
+                "  ],\n" +
+                "  \"stsRecord\": {\n" +
+                "    \"valid\": \"true\",\n" +
+                "    \"location\": \"_mta-sts.mimecast.com\",\n" +
+                "    \"id\": \"19840507T234501\",\n" +
+                "    \"version\": \"STSv1\"\n" +
+                "  },\n" +
+                "  \"errors\": []\n" +
+                "}";
+        assertEquals(expected, logs.get(5));
     }
 
     @Test
