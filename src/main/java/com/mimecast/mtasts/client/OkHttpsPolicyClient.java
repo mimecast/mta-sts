@@ -68,8 +68,11 @@ public class OkHttpsPolicyClient extends ConfigHandler implements HttpsPolicyCli
                 // Response.
                 Response response = getClient().newCall(request).execute();
 
-                // Policy.
-                return new OkHttpsResponse(response);
+                // Extract data.
+                OkHttpsResponse okHttpsResponse = new OkHttpsResponse(response);
+                response.close();
+
+                return okHttpsResponse;
 
             } catch (GeneralSecurityException | IOException e) {
                 log.error("Policy cannot be retrieved: {}", e.getMessage());

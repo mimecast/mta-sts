@@ -7,7 +7,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * OK HTTPS Response.
@@ -19,15 +21,13 @@ import java.util.List;
 public class OkHttpsResponse implements HttpsResponse {
     private static final Logger log = LogManager.getLogger(OkHttpsResponse.class);
 
-    /**
-     * OK HTTPS Response instance.
-     */
-    private final Response response;
-
-    /**
-     * Body string.
-     */
-    private String body;
+    private String body = null;
+    private boolean successful = false;
+    private int code = 0;
+    private String message = null;
+    private boolean handshake = false;
+    private List<Certificate> certificates = new ArrayList<>();
+    private Map<String, String> headers = new HashMap<>();
 
     /**
      * Constructs a new HttpsResponse instance with given OK HTTP Response.
@@ -36,8 +36,23 @@ public class OkHttpsResponse implements HttpsResponse {
      * @param response Response instance.
      */
     public OkHttpsResponse(Response response) throws IOException {
-        this.response = response;
-        body = response != null && response.body() != null ? response.body().string() : null;
+        if (response != null) {
+            body = response.body() != null ? response.body().string() : null;
+            successful = response.isSuccessful();
+            code = response.code();
+            message = response.message();
+
+            if (response.handshake() != null) {
+                handshake = true;
+                try {
+                    certificates = response.handshake().peerCertificates();
+                } catch (Exception e) {
+                    log.error("Found no peer certificate chain");
+                }
+            }
+
+            response.headers().iterator().forEachRemaining(header -> headers.put(header.getFirst().toLowerCase(), header.getSecond()));
+        }
     }
 
     /**
@@ -47,7 +62,7 @@ public class OkHttpsResponse implements HttpsResponse {
      */
     @Override
     public boolean isSuccessful() {
-        return response != null && response.isSuccessful();
+        return successful;
     }
 
     /**
@@ -57,7 +72,7 @@ public class OkHttpsResponse implements HttpsResponse {
      */
     @Override
     public int getCode() {
-        return response != null ? response.code() : 0;
+        return code;
     }
 
     /**
@@ -67,7 +82,7 @@ public class OkHttpsResponse implements HttpsResponse {
      */
     @Override
     public String getMessage() {
-        return response != null ? response.message() : null;
+        return message;
     }
 
     /**
@@ -77,7 +92,7 @@ public class OkHttpsResponse implements HttpsResponse {
      */
     @Override
     public boolean isHandshake() {
-        return response != null && response.handshake() != null;
+        return handshake;
     }
 
     /**
@@ -88,15 +103,7 @@ public class OkHttpsResponse implements HttpsResponse {
     @Override
     @SuppressWarnings("squid:S1168")
     public List<Certificate> getPeerCertificates() {
-        try {
-            if (response.handshake() != null) {
-                return response.handshake().peerCertificates();
-            }
-        } catch (Exception e) {
-            log.error("Found no peer certificate chain");
-        }
-
-        return new ArrayList<>();
+        return certificates;
     }
 
     /**
@@ -107,7 +114,7 @@ public class OkHttpsResponse implements HttpsResponse {
      */
     @Override
     public String getHeader(String name) {
-        return response != null ? response.header(name) : null;
+        return headers.get(name.toLowerCase());
     }
 
     /**
