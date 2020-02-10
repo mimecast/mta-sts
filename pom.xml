@@ -5,7 +5,7 @@
     <groupId>com.mimecast</groupId>
     <artifactId>mta-sts</artifactId>
     <name>mta-sts</name>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
     <description>MTA Strict Transport Security.</description>
 
@@ -135,39 +135,6 @@
                         </manifest>
                     </archive>
                 </configuration>
-            </plugin>
-
-            <!-- Include dependencies in package -->
-            <plugin>
-                <!-- run with: mvn clean compile assembly:single -->
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.1</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.mimecast.mtasts.Main</mainClass>
-                            <addClasspath>true</addClasspath>
-                        </manifest>
-                        <manifestEntries>
-                            <project>${project.name}</project>
-                            <version>${project.version}</version>
-                            <hudson-build-number>${BUILD_NUMBER}</hudson-build-number>
-                            <hudson-built-date>${BUILD_ID}</hudson-built-date>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
