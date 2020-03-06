@@ -81,7 +81,7 @@ public class LocalHttpsServer {
             LocalHttpsResponse response = entry.getValue();
 
             httpServer.createContext("/" + path, exchange -> {
-                if (response != null) {
+                if (response != null && response.getResponseString() != null) {
                     Headers responseHeaders = exchange.getResponseHeaders();
                     responseHeaders.add("Content-Type", response.getContentType());
 
