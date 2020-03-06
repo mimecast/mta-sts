@@ -69,7 +69,7 @@ public class LocalHttpsServer {
         keyManagerFactory.init(keyStore, storePass);
 
         // Trust manager.
-        TrustManager[] tm = new TrustManager[] { new PermissiveTrustManager() };
+        TrustManager[] tm = new TrustManager[]{new PermissiveTrustManager()};
         ctx.init(keyManagerFactory.getKeyManagers(), tm, null);
 
         // Server.
@@ -78,15 +78,15 @@ public class LocalHttpsServer {
 
         for (Map.Entry<String, LocalHttpsResponse> entry : map.entrySet()) {
             String path = entry.getKey();
-            String response = entry.getValue().getResponseString();
+            LocalHttpsResponse response = entry.getValue();
 
             httpServer.createContext("/" + path, exchange -> {
                 if (response != null) {
                     Headers responseHeaders = exchange.getResponseHeaders();
-                    responseHeaders.add("Content-Type","text/plain");
+                    responseHeaders.add("Content-Type", response.getContentType());
 
-                    exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.length());
-                    exchange.getResponseBody().write(response.getBytes());
+                    exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.getResponseString().length());
+                    exchange.getResponseBody().write(response.getResponseString().getBytes());
                 } else {
                     exchange.sendResponseHeaders(HttpURLConnection.HTTP_NOT_FOUND, 0);
                 }
