@@ -1,15 +1,12 @@
 package com.mimecast.mtasts;
 
-import com.google.gson.Gson;
 import com.mimecast.mtasts.util.LocalDnsResolver;
 import com.mimecast.mtasts.util.LocalHttpsResponse;
 import com.mimecast.mtasts.util.LocalHttpsServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.xbill.DNS.ExtendedResolver;
 import org.xbill.DNS.Lookup;
-import org.xbill.DNS.Resolver;
 import org.xbill.DNS.Type;
 
 import java.io.IOException;
@@ -20,7 +17,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -36,7 +32,7 @@ class MainTest {
     @BeforeAll
     static void before() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException {
         // Set local resolver
-        Lookup.setDefaultResolver(new ExtendedResolver(new Resolver[]{ new LocalDnsResolver() }));
+        Lookup.setDefaultResolver(new LocalDnsResolver());
         LocalDnsResolver.put("_mta-sts.mimecast.com", Type.TXT, new ArrayList<String>() {{ add( "v=STSv1; id=19840507T234501;" ); }});
         LocalDnsResolver.put("_smtp._tls.mimecast.com", Type.TXT, new ArrayList<String>() {{ add( "v=TLSRPTv1; rua=mailto:tlsrpt@mimecast.com;" ); }});
         LocalDnsResolver.put("mimecast.com", Type.MX, new ArrayList<String>() {{
@@ -108,7 +104,6 @@ class MainTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void shortArgs() throws InstantiationException {
         List<String> argv = new ArrayList<>();
 

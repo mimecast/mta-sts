@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xbill.DNS.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class LocalDnsResolverTest {
 
     @BeforeAll
-    static void before() throws IOException {
+    static void before() {
         // Set local resolver
-        Lookup.setDefaultResolver(new ExtendedResolver(new Resolver[]{ new LocalDnsResolver() }));
+        Lookup.setDefaultResolver(new LocalDnsResolver());
 
         // Valid && supported
         LocalDnsResolver.put("mimecast.com", Type.NS, new ArrayList<String>() {{
@@ -64,10 +63,10 @@ class LocalDnsResolverTest {
 
     @Test
     void valid() throws TextParseException {
-        assertTrue(lookup("mimecast.com.", Type.NS)[0].rdataToString().matches("^dns0[0-9]\\.mimecast\\.com\\.$"));
-        assertTrue(lookup("mimecast.com.", Type.NS)[1].rdataToString().matches("^dns0[0-9]\\.mimecast\\.com\\.$"));
-        assertTrue(lookup("mimecast.com.", Type.NS)[2].rdataToString().matches("^dns0[0-9]\\.mimecast\\.com\\.$"));
-        assertTrue(lookup("mimecast.com.", Type.NS)[3].rdataToString().matches("^dns0[0-9]\\.mimecast\\.com\\.$"));
+        assertTrue(lookup("mimecast.com.", Type.NS)[0].rdataToString().matches("^dns0\\d\\.mimecast\\.com\\.$"));
+        assertTrue(lookup("mimecast.com.", Type.NS)[1].rdataToString().matches("^dns0\\d\\.mimecast\\.com\\.$"));
+        assertTrue(lookup("mimecast.com.", Type.NS)[2].rdataToString().matches("^dns0\\d\\.mimecast\\.com\\.$"));
+        assertTrue(lookup("mimecast.com.", Type.NS)[3].rdataToString().matches("^dns0\\d\\.mimecast\\.com\\.$"));
 
         assertTrue(lookup("mimecast.com.", Type.MX)[0].rdataToString().matches("^1 service-alpha-inbound-[ab]\\.mimecast\\.com\\.$"));
         assertTrue(lookup("mimecast.com.", Type.MX)[1].rdataToString().matches("^1 service-alpha-inbound-[ab]\\.mimecast\\.com\\.$"));

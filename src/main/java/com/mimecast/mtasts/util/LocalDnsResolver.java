@@ -6,7 +6,13 @@ import org.xbill.DNS.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 
 /**
  * Local DNS Resolver.
@@ -69,7 +75,7 @@ public class LocalDnsResolver implements Resolver {
     /**
      * Loop results and build responses.
      *
-     * @param name Record name.
+     * @param name    Record name.
      * @param records List of String records.
      * @return List of Record.
      */
@@ -134,36 +140,55 @@ public class LocalDnsResolver implements Resolver {
         return answer;
     }
 
+    @Override
+    public CompletionStage<Message> sendAsync(Message query) {
+        return Resolver.super.sendAsync(query);
+    }
+
+    @Override
+    public CompletionStage<Message> sendAsync(Message query, Executor executor) {
+        return Resolver.super.sendAsync(query, executor);
+    }
+
     /**
      * Unused.
      */
 
     @Override
-    public void setPort(int i) {}
+    public void setPort(int i) {
+    }
 
     @Override
-    public void setTCP(boolean b) {}
+    public void setTCP(boolean b) {
+    }
 
     @Override
-    public void setIgnoreTruncation(boolean b) {}
+    public void setIgnoreTruncation(boolean b) {
+    }
 
     @Override
-    public void setEDNS(int i) {}
+    public void setEDNS(int i) {
+    }
 
     @Override
-    public void setEDNS(int i, int i1, int i2, List list) {}
+    public void setEDNS(int version, int payloadSize, int flags, EDNSOption... options) {
+        Resolver.super.setEDNS(version, payloadSize, flags, options);
+    }
 
     @Override
-    public void setTSIGKey(TSIG tsig) {}
+    public void setEDNS(int i, int i1, int i2, List list) {
+    }
 
     @Override
-    public void setTimeout(int i, int i1) {}
+    public void setTSIGKey(TSIG tsig) {
+    }
 
     @Override
-    public void setTimeout(int i) {}
+    public void setTimeout(Duration timeout) {
+    }
 
     @Override
-    public Object sendAsync(Message message, ResolverListener resolverListener) {
-        return null;
+    public Duration getTimeout() {
+        return Resolver.super.getTimeout();
     }
 }

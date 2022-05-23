@@ -4,12 +4,9 @@ import com.mimecast.mtasts.assets.StsRecord;
 import com.mimecast.mtasts.util.LocalDnsResolver;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.xbill.DNS.ExtendedResolver;
 import org.xbill.DNS.Lookup;
-import org.xbill.DNS.Resolver;
 import org.xbill.DNS.Type;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -20,12 +17,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class DnsRecordClientTest {
 
     @BeforeAll
-    static void before() throws IOException {
+    static void before() {
         // Set local resolver
-        Lookup.setDefaultResolver(new ExtendedResolver(new Resolver[]{ new LocalDnsResolver() }));
-        LocalDnsResolver.put("_mta-sts.mimecast.com", Type.TXT, new ArrayList<String>() {{ add( "v=STSv1; id=19840507T234501;" ); }});
-        LocalDnsResolver.put("_mta-sts.mimecast.eu", Type.TXT, new ArrayList<String>() {{ add( "v=STSv1; id=;" ); }});
-        LocalDnsResolver.put("_mta-sts.mimecast.us", Type.TXT, new ArrayList<String>() {{ add( "id=19840507T234501;" ); }});
+        Lookup.setDefaultResolver(new LocalDnsResolver());
+        LocalDnsResolver.put("_mta-sts.mimecast.com", Type.TXT, new ArrayList<String>() {{
+            add("v=STSv1; id=19840507T234501;");
+        }});
+        LocalDnsResolver.put("_mta-sts.mimecast.eu", Type.TXT, new ArrayList<String>() {{
+            add("v=STSv1; id=;");
+        }});
+        LocalDnsResolver.put("_mta-sts.mimecast.us", Type.TXT, new ArrayList<String>() {{
+            add("id=19840507T234501;");
+        }});
     }
 
     @Test
