@@ -98,17 +98,16 @@ The list of result types will start with the minimal set below and is expected t
 - certificate-host-mismatch
 - certificate-expired
 - certificate-not-trusted
-- validation-failure;
 
 #### Policy Failures for DANE:
 - tlsa-invalid
 - dnssec-invalid
-- dane-required;
+- dane-required
 
 #### Policy Failures for MTA-STS:
 - sts-policy-fetch-error
 - sts-policy-invalid
-- sts-webpki-invalid;
+- sts-webpki-invalid
 
 #### General Failure:
 - validation-failure
