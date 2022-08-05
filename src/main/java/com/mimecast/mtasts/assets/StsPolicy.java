@@ -167,7 +167,7 @@ public final class StsPolicy extends ConfigHandler {
     /**
      * Parse data.
      *
-     * @return List of Pair of String, String.
+     * @return List of Pairs of String, String.
      */
     private List<Pair> parse() {
         List<Pair> pairs = new ArrayList<>();
@@ -306,9 +306,11 @@ public final class StsPolicy extends ConfigHandler {
      * <p>This should be the DNS record at the time of policy fetching.
      *
      * @param report StsReport instance.
+     * @return Self.
      */
-    public void setReport(StsReport report) {
+    public StsPolicy setReport(StsReport report) {
         this.report = report;
+        return this;
     }
 
     /**
@@ -457,7 +459,7 @@ public final class StsPolicy extends ConfigHandler {
     }
 
     /**
-     * To string.
+     * As string.
      * <p>Returns an extended policy string for caching.
      *
      * @return Extended policy string.

@@ -236,4 +236,29 @@ public class Config {
         this.policySoftMinAge = policySoftMinAge;
         return this;
     }
+
+    /**
+     * Fetch RPT record.
+     */
+    protected boolean fetchRptRecord = true;
+
+    /**
+     * Is fetch RPT record.
+     *
+     * @return Boolean.
+     */
+    public boolean isFetchRptRecord() {
+        return fetchRptRecord;
+    }
+
+    /**
+     * Sets fetch RPT record.
+     *
+     * @param fetchRptRecord Boolean.
+     * @return Self.
+     */
+    public Config setFetchRptRecord(boolean fetchRptRecord) {
+        this.fetchRptRecord = fetchRptRecord;
+        return this;
+    }
 }

@@ -152,7 +152,7 @@ public class StrictTransportSecurity {
             throw new ValidatorException("Domain invalid: " + domain);
         }
 
-        return Optional.of(fetchRptRecord(policy));
+        return Optional.of(fetchRptRecord(policy, config));
     }
 
     /**
@@ -241,12 +241,15 @@ public class StrictTransportSecurity {
      * Gets TLSRPT record.
      *
      * @param policy StsPolicy instance.
+     * @param config Config instance.
      * @return StsPolicy instance.
      */
-    private StsPolicy fetchRptRecord(StsPolicy policy) {
+    private StsPolicy fetchRptRecord(StsPolicy policy, Config config) {
+        if (config ==  null || config.isFetchRptRecord()) {
         Optional<StsReport> optional = dnsRecordClient.getRptRecord(policy.getRecord().getDomain());
-        if (optional.isPresent() && optional.get().isValid()) {
-            policy.setReport(optional.get());
+            if (optional.isPresent() && optional.get().isValid()) {
+                policy.setReport(optional.get());
+            }
         }
 
         return policy;
