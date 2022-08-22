@@ -68,7 +68,7 @@ public class StsPolicyValidator {
             if (contentType == null) {
                 log("Header Content-Type not found", config.isRequireTextPlain());
             }
-            else if (!contentType.equalsIgnoreCase("text/plain")) {
+            else if (!contentType.toLowerCase().contains("text/plain")) {
                 log("Header Content-Type invalid: " + contentType, config.isRequireTextPlain());
             }
 
