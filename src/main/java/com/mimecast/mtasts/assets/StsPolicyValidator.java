@@ -30,12 +30,12 @@ public class StsPolicyValidator {
     /**
      * List of errors.
      */
-    private final List<String> errors = new ArrayList<>();
+    protected final List<String> errors = new ArrayList<>();
 
     /**
      * List of warnings.
      */
-    private final List<String> warnings = new ArrayList<>();
+    protected final List<String> warnings = new ArrayList<>();
 
     /**
      * Gets policy.
