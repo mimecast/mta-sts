@@ -117,6 +117,15 @@ public class StsPolicyValidator {
     }
 
     /**
+     * Adds error.
+     *
+     * @param error String.
+     */
+    public void addError(String error) {
+        errors.add(error);
+    }
+
+    /**
      * Gets warnings.
      *
      * @return List of String.
