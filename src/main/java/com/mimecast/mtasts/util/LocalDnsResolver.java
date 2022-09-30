@@ -142,12 +142,12 @@ public class LocalDnsResolver implements Resolver {
 
     @Override
     public CompletionStage<Message> sendAsync(Message query) {
-        return Resolver.super.sendAsync(query);
+        return new ExtendedResolver().sendAsync(query);
     }
 
     @Override
     public CompletionStage<Message> sendAsync(Message query, Executor executor) {
-        return Resolver.super.sendAsync(query, executor);
+        return new ExtendedResolver().sendAsync(query, executor);
     }
 
     /**
