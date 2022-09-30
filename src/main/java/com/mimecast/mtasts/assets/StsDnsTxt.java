@@ -32,7 +32,7 @@ public abstract class StsDnsTxt {
      * @param record Record string.
      */
     StsDnsTxt(String record) {
-        this.record = record.replaceAll("^\"|\"$", "");
+        this.record = record.replaceAll("\"", "");
 
         // Relaxed tokenize by semicolon and space.
         StringTokenizer tokenizer = new StringTokenizer(this.record, ";| ");
