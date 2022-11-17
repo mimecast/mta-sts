@@ -1,12 +1,13 @@
----
+component: "MTA-STS"
+component_usage: "Open Source"
+owning_team: "Vlad Marian"
+dev_language: "Java"
 component: MTA-STS
 project_name: MTS-STS
-full_path: https://gitlab.devuk.mimecast.lan/Messaging/mta-sts
+full_path: 'https://github.com/mimecast/mta-sts'
 component_usage: Open Source
-risk_category: Low
-application_purpose: Library
+owning_team: Vlad Marian
+risk_category: low
+application_purpose: library
 dev_language:
-- Java
-development_strategy: 
-code_repository_type: Gitlab
-owner: Vlad Marian
+  - Java
