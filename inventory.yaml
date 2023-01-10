@@ -9,5 +9,6 @@ component_usage: Open Source
 owning_team: Vlad Marian
 risk_category: low
 application_purpose: library
+secrets_scan_date: '2023-01-10'
 dev_language:
   - Java
