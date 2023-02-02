@@ -1,10 +1,15 @@
 package com.mimecast.mtasts.client;
 
 import okhttp3.Response;
+import okio.Buffer;
+import okio.BufferedSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +42,7 @@ public class OkHttpsResponse implements HttpsResponse {
      */
     public OkHttpsResponse(Response response) throws IOException {
         if (response != null) {
-            body = response.body() != null ? response.body().string() : null;
+            body = bufferResponseBody(response);
             successful = response.isSuccessful();
             code = response.code();
             message = response.message();
@@ -125,5 +130,31 @@ public class OkHttpsResponse implements HttpsResponse {
     @Override
     public String getBody() {
         return body;
+    }
+
+    /**
+     * Feeds a response body into a buffer and returns it as a string.
+     *
+     * @author "Andrew Havis" <ahavis@mimecast.com>
+     * @param response HTTP response.
+     * @return Body string.
+     */
+    @Nullable
+    private String bufferResponseBody(@NotNull Response response) throws IOException {
+        final int BUFFER_SIZE = 32;
+        if (response.body() != null) {
+            Buffer buffer = new Buffer();
+            BufferedSource bufferedSource = response.body().source();
+            if (bufferedSource.isOpen()) {
+                while (!bufferedSource.exhausted()) {
+                    bufferedSource.read(buffer, BUFFER_SIZE);
+                }
+                bufferedSource.close();
+            }
+
+            response.body().close();
+            return buffer.size() > 0 ? buffer.readString(Charset.defaultCharset()) : "";
+        }
+        return null;
     }
 }
