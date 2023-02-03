@@ -140,20 +140,22 @@ public class OkHttpsResponse implements HttpsResponse {
      * @return Body string.
      */
     @Nullable
-    private String bufferResponseBody(@NotNull Response response) throws IOException {
+    private String bufferResponseBody(@NotNull Response response) {
         final int BUFFER_SIZE = 32;
-        if (response.body() != null) {
-            Buffer buffer = new Buffer();
-            BufferedSource bufferedSource = response.body().source();
-            if (bufferedSource.isOpen()) {
-                while (!bufferedSource.exhausted()) {
-                    bufferedSource.read(buffer, BUFFER_SIZE);
+        try (Buffer buffer = new Buffer()) {
+            if (response.body() != null) {
+                BufferedSource bufferedSource = response.body().source();
+                if (bufferedSource.isOpen()) {
+                    while (!bufferedSource.exhausted()) {
+                        bufferedSource.read(buffer, BUFFER_SIZE);
+                    }
+                    bufferedSource.close();
                 }
-                bufferedSource.close();
+                response.body().close();
+                return buffer.size() > 0 ? buffer.readString(Charset.defaultCharset()) : "";
             }
-
-            response.body().close();
-            return buffer.size() > 0 ? buffer.readString(Charset.defaultCharset()) : "";
+        } catch (IOException e) {
+            log.error("Cannot buffer HTTP response body");
         }
         return null;
     }
