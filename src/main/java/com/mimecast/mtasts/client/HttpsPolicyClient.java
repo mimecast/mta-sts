@@ -18,7 +18,8 @@ public interface HttpsPolicyClient {
      * <p>Requires a fresh StsRecord instance to get the domain from and construct the StsPolicy instance.
      *
      * @param record StsRecord instance.
+     * @param maxPolicyBodySize The maximum size of the policy body.
      * @return OkHttpsResponse instance.
      */
-    OkHttpsResponse getPolicy(StsRecord record);
+    OkHttpsResponse getPolicy(StsRecord record, int maxPolicyBodySize);
 }

@@ -220,7 +220,10 @@ public class StrictTransportSecurity {
      * @return StsPolicy instance.
      */
     private StsPolicy fetchPolicyHttps(StsRecord record, Config config) {
-        HttpsResponse response = httpsPolicyClient.getPolicy(record);
+        HttpsResponse response = httpsPolicyClient.getPolicy(record, Optional.ofNullable(config)
+                .map(Config::getPolicyMaxBodySize)
+                .orElse(new Config().getPolicyMaxBodySize()) // get default
+        );
 
         StsPolicy policy = new StsPolicy(record, response);
 

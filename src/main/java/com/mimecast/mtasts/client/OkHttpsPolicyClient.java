@@ -1,6 +1,7 @@
 package com.mimecast.mtasts.client;
 
 import com.mimecast.mtasts.assets.StsRecord;
+import com.mimecast.mtasts.config.Config;
 import com.mimecast.mtasts.config.ConfigHandler;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -52,10 +53,16 @@ public class OkHttpsPolicyClient extends ConfigHandler implements HttpsPolicyCli
      * <p>Will only return valid and not expired policies.
      *
      * @param record StsRecord instance.
+     * @param maxPolicyBodySize The maximum size of the policy body.
      * @return OkHttpsResponse instance.
      */
     @Override
-    public OkHttpsResponse getPolicy(StsRecord record) {
+    public OkHttpsResponse getPolicy(StsRecord record, int maxPolicyBodySize) {
+        if (maxPolicyBodySize == 0) {
+            // Default to the maximum policy body size specified in the config (64k) if it is zero or not present.
+            maxPolicyBodySize = new Config().getPolicyMaxBodySize();
+        }
+
         if (record != null && record.getDomain() != null) {
             try {
                 // Request.
@@ -69,7 +76,7 @@ public class OkHttpsPolicyClient extends ConfigHandler implements HttpsPolicyCli
                 Response response = getClient().newCall(request).execute();
 
                 // Extract data.
-                OkHttpsResponse okHttpsResponse = new OkHttpsResponse(response);
+                OkHttpsResponse okHttpsResponse = new OkHttpsResponse(response, maxPolicyBodySize);
                 response.close();
 
                 return okHttpsResponse;
