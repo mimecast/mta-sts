@@ -31,6 +31,7 @@ public class OkHttpsResponse implements HttpsResponse {
     private int code = 0;
     private String message = null;
     private boolean handshake = false;
+    private int maxPolicyBodySize;
     private List<Certificate> certificates = new ArrayList<>();
     private Map<String, String> headers = new HashMap<>();
 
@@ -39,9 +40,12 @@ public class OkHttpsResponse implements HttpsResponse {
      * <p>Wrapper for OkHttpPolicyCLient response.
      *
      * @param response Response instance.
+     * @param maxPolicyBodySize The maximum size of the policy body.
      */
-    public OkHttpsResponse(Response response) throws IOException {
+    public OkHttpsResponse(Response response, int maxPolicyBodySize) {
         if (response != null) {
+            this.maxPolicyBodySize = maxPolicyBodySize;
+
             body = bufferResponseBody(response);
             successful = response.isSuccessful();
             code = response.code();
@@ -134,6 +138,9 @@ public class OkHttpsResponse implements HttpsResponse {
 
     /**
      * Feeds a response body into a buffer and returns it as a string.
+     * <p>Note that this will populate the body until it reaches the maximum policy body size,
+     * which is settable with the <code>setPolicyMaxBodySize()</code> method in the
+     * <code>Config</code> class. Any content over this limit will not be included in the result.
      *
      * @author "Andrew Havis" <ahavis@mimecast.com>
      * @param response HTTP response.
@@ -146,7 +153,7 @@ public class OkHttpsResponse implements HttpsResponse {
             if (response.body() != null) {
                 BufferedSource bufferedSource = response.body().source();
                 if (bufferedSource.isOpen()) {
-                    while (!bufferedSource.exhausted()) {
+                    while (!bufferedSource.exhausted() && buffer.size() + BUFFER_SIZE < this.maxPolicyBodySize) {
                         bufferedSource.read(buffer, BUFFER_SIZE);
                     }
                     bufferedSource.close();
