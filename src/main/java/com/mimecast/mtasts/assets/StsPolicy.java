@@ -217,9 +217,14 @@ public final class StsPolicy extends ConfigHandler {
                     try {
                         maxAge = Integer.parseInt(entry.getValue());
                     } catch (NumberFormatException e) {
-                        log.error("max_age: '{}' is in wrong format. Default policy min age is being used", entry.getValue());
-                        maxAge = config.getPolicyMinAge();
+                        String error = "Max age is not the correct format: " + entry.getValue();
+                        if (config.isRequireValidMaxAge()) {
+                            validator.addError(error);
+                        } else {
+                            validator.addWarning(error);
+                        }
                     }
+
                     if (maxAge > config.getPolicyMaxAge()) {
                         validator.addWarning("Max age more than config max: " +  maxAge + " > " + config.getPolicyMaxAge());
                         maxAge = Math.min(maxAge, config.getPolicyMaxAge());

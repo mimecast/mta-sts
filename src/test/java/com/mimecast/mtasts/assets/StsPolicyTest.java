@@ -365,12 +365,12 @@ class StsPolicyTest {
     }
 
     @Test
-    void nonNumericMaxAge() {
+    void nonNumericMaxAgeRequired() {
         StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
 
         String policyBody = "version: STSv1\r\n" +
                 "mode: testing\r\n" +
-                "max_age: twenfy\r\n" +
+                "max_age: twenty\r\n" +
                 "mx: *.mimecast.com\r\n";
 
         HttpsResponseMock httpsResponse = new HttpsResponseMock()
@@ -384,10 +384,37 @@ class StsPolicyTest {
 
         StsPolicy policy = new StsPolicy(record, httpsResponse).make();
 
+        assertFalse(policy.isValid());
+        assertEquals(86400, policy.getMaxAge());
+        assertEquals(1, policy.getValidator().getErrors().size());
+        assertEquals(1, policy.getValidator().getWarnings().size());
+    }
+
+    @Test
+    void nonNumericMaxAgeNotRequired() {
+        StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
+
+        String policyBody = "version: STSv1\r\n" +
+                "mode: testing\r\n" +
+                "max_age: twenty\r\n" +
+                "mx: *.mimecast.com\r\n";
+
+        HttpsResponseMock httpsResponse = new HttpsResponseMock()
+                .setSuccessful(true)
+                .setCode(200)
+                .setMessage("OK")
+                .setHandshake(true)
+                .setPeerCertificates(new ArrayList<>())
+                .putHeader("Content-Type", "text/plain")
+                .setBody(policyBody);
+
+        StsPolicy policy = new StsPolicy(record, httpsResponse).setConfig(new Config().setRequireValidMaxAge(false)).make();
+
         assertTrue(policy.isValid());
-        assertEquals(604800, policy.getMaxAge());
+        assertEquals(86400, policy.getMaxAge());
         assertFalse(policy.isCached());
         assertTrue(policy.getValidator().getErrors().isEmpty());
+        assertEquals(2, policy.getValidator().getWarnings().size());
     }
 
     @Test
