@@ -135,6 +135,31 @@ public class Config {
     }
 
     /**
+     * Require valid policy max age number.
+     */
+    protected boolean requireValidMaxAge = true;
+
+    /**
+     * Is required valid policy max age numnber.
+     *
+     * @return Boolean.
+     */
+    public boolean isRequireValidMaxAge() {
+        return requireValidMaxAge;
+    }
+
+    /**
+     * Sets required valid policy max age number.
+     *
+     * @param requireValidMaxAge Boolean.
+     * @return Self.
+     */
+    public Config setRequireValidMaxAge(boolean requireValidMaxAge) {
+        this.requireValidMaxAge = requireValidMaxAge;
+        return this;
+    }
+
+    /**
      * Policy max body size (64k).
      */
     private int policyMaxBodySize = 64000;
