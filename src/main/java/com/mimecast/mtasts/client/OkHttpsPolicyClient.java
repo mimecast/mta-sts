@@ -3,35 +3,30 @@ package com.mimecast.mtasts.client;
 import com.mimecast.mtasts.assets.StsRecord;
 import com.mimecast.mtasts.config.Config;
 import com.mimecast.mtasts.config.ConfigHandler;
+import com.mimecast.mtasts.exception.PolicyFetchErrorException;
+import com.mimecast.mtasts.exception.PolicyWebPKIInvalidException;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
 /**
  * OK HTTPS Policy Client.
- * <p>HTTPS client implemenation specific for MTA-STS.
+ * <p>HTTPS client implementation specific for MTA-STS.
  *
- * @link https://tools.ietf.org/html/rfc8461#section-3.3 RFC8461#section-3.3
+ * @link <a href="https://tools.ietf.org/html/rfc8461#section-3.3">RFC8461#section-3.3</a>
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public class OkHttpsPolicyClient extends ConfigHandler implements HttpsPolicyClient {
-    private static final Logger log = LogManager.getLogger(OkHttpsPolicyClient.class);
 
     /**
      * Trust manager to use for certificate validation.
@@ -52,22 +47,24 @@ public class OkHttpsPolicyClient extends ConfigHandler implements HttpsPolicyCli
      * <p>Requires a fresh StsRecord instance to get the domain from and construct the StsPolicy instance.
      * <p>Will only return valid and not expired policies.
      *
-     * @param record StsRecord instance.
+     * @param stsRecord StsRecord instance.
      * @param maxPolicyBodySize The maximum size of the policy body.
      * @return OkHttpsResponse instance.
+     * @throws PolicyWebPKIInvalidException Policy web PKI invalid exception.
+     * @throws PolicyFetchErrorException Policy fetch error exception.
      */
     @Override
-    public OkHttpsResponse getPolicy(StsRecord record, int maxPolicyBodySize) {
+    public OkHttpsResponse getPolicy(StsRecord stsRecord, int maxPolicyBodySize) throws PolicyWebPKIInvalidException, PolicyFetchErrorException {
         if (maxPolicyBodySize == 0) {
             // Default to the maximum policy body size specified in the config (64k) if it is zero or not present.
             maxPolicyBodySize = new Config().getPolicyMaxBodySize();
         }
 
-        if (record != null && record.getDomain() != null) {
+        if (stsRecord != null && stsRecord.getDomain() != null) {
             try {
                 // Request.
                 Request request = new Request.Builder()
-                        .url(getUrl(record.getDomain()))
+                        .url(getUrl(stsRecord.getDomain()))
                         .addHeader("Content-Type", "text/plain")
                         .addHeader("Cache-Control", "no-cache")
                         .build();
@@ -80,9 +77,10 @@ public class OkHttpsPolicyClient extends ConfigHandler implements HttpsPolicyCli
                 response.close();
 
                 return okHttpsResponse;
-
-            } catch (GeneralSecurityException | IOException e) {
-                log.error("Policy cannot be retrieved: {}", e.getMessage());
+            } catch (SSLHandshakeException e) {
+                throw new PolicyWebPKIInvalidException(e.getMessage());
+            } catch (Exception e) {
+                throw new PolicyFetchErrorException(e.getMessage());
             }
         }
 

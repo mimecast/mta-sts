@@ -7,9 +7,7 @@ import com.mimecast.mtasts.assets.StsReport;
 import com.mimecast.mtasts.cache.PolicyCache;
 import com.mimecast.mtasts.client.*;
 import com.mimecast.mtasts.config.Config;
-import com.mimecast.mtasts.exception.BadPolicyException;
-import com.mimecast.mtasts.exception.BadRecordException;
-import com.mimecast.mtasts.exception.NoRecordException;
+import com.mimecast.mtasts.exception.*;
 import org.apache.commons.validator.ValidatorException;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.logging.log4j.LogManager;
@@ -24,13 +22,13 @@ import java.util.Optional;
  * Strict Transport Security.
  * <p>Implementation of MTA-STS RFC8461.
  *
- * @link https://tools.ietf.org/html/rfc8461 RFC8461
+ * @link <a href="https://tools.ietf.org/html/rfc8461">RFC8461</a>
  *
  * @see XBillDnsRecordClient
  * @see OkHttpsPolicyClient
  * @see PolicyCache
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 @SuppressWarnings("WeakerAccess")
 public class StrictTransportSecurity {
@@ -95,8 +93,9 @@ public class StrictTransportSecurity {
      * @throws ValidatorException Domain provided is invalid.
      * @throws BadPolicyException HTTPS policy is invalid or not found.
      * @throws BadRecordException DNS record is invalid or not found.
+     * @
      */
-    public Optional<StsPolicy> getPolicy(String domain) throws ValidatorException, NoRecordException, BadRecordException, BadPolicyException {
+    public Optional<StsPolicy> getPolicy(String domain) throws ValidatorException, NoRecordException, BadRecordException, BadPolicyException, PolicyFetchErrorException, PolicyWebPKIInvalidException {
         return getPolicy(domain, null);
     }
 
@@ -112,10 +111,13 @@ public class StrictTransportSecurity {
      * @param config Config instance.
      * @return Optional of StsPolicy instance.
      * @throws ValidatorException Domain provided is invalid.
-     * @throws BadPolicyException HTTPS policy is invalid or not found.
+     * @throws NoRecordException  DNS Exception.
      * @throws BadRecordException DNS record is invalid or not found.
+     * @throws BadPolicyException HTTPS policy is invalid or not found.
+     * @throws PolicyWebPKIInvalidException Policy web PKI invalid exception.
+     * @throws PolicyFetchErrorException Policy fetch error exception.
      */
-    public Optional<StsPolicy> getPolicy(String domain, Config config) throws ValidatorException, NoRecordException, BadRecordException, BadPolicyException {
+    public Optional<StsPolicy> getPolicy(String domain, Config config) throws ValidatorException, NoRecordException, BadRecordException, BadPolicyException, PolicyFetchErrorException, PolicyWebPKIInvalidException {
         StsPolicy policy;
 
         // Validate domain.
@@ -158,17 +160,19 @@ public class StrictTransportSecurity {
     /**
      * Gets policy from cache if any.
      *
-     * @param record StsRecord instance.
+     * @param stsRecord StsRecord instance.
      * @param config Config instance.
      * @return StsPolicy instance.
+     * @throws PolicyWebPKIInvalidException Policy web PKI invalid exception.
+     * @throws PolicyFetchErrorException Policy fetch error exception.
      */
-    private StsPolicy getPolicy(StsRecord record, Config config) {
+    private StsPolicy getPolicy(StsRecord stsRecord, Config config) throws PolicyWebPKIInvalidException, PolicyFetchErrorException {
         // Search policy in cache first.
-        StsPolicy policy = searchPolicyCache(record);
+        StsPolicy policy = searchPolicyCache(stsRecord);
 
         // Fetch policy if not in cache or expired.
         if (policy == null || policy.isExpired()) {
-            return fetchPolicyHttps(record, config);
+            return fetchPolicyHttps(stsRecord, config);
         }
 
         return policy;
@@ -177,14 +181,14 @@ public class StrictTransportSecurity {
     /**
      * Gets policy from cache by StsRecord.
      *
-     * @param record StsRecord instance.
+     * @param stsRecord StsRecord instance.
      * @return StsPolicy instance.
      */
-    private StsPolicy searchPolicyCache(StsRecord record) {
+    private StsPolicy searchPolicyCache(StsRecord stsRecord) {
         StsPolicy policy = null;
 
         if (cache != null) {
-            Optional<StsPolicy> optional = cache.getByRecord(record);
+            Optional<StsPolicy> optional = cache.getByRecord(stsRecord);
             if (optional.isPresent()) {
                 policy = optional.get();
             }
@@ -215,17 +219,19 @@ public class StrictTransportSecurity {
     /**
      * Gets policy from well known HTTPS address.
      *
-     * @param record StsRecord instance.
+     * @param stsRecord StsRecord instance.
      * @param config Config instance.
      * @return StsPolicy instance.
+     * @throws PolicyWebPKIInvalidException Policy web PKI invalid exception.
+     * @throws PolicyFetchErrorException Policy fetch error exception.
      */
-    private StsPolicy fetchPolicyHttps(StsRecord record, Config config) {
-        HttpsResponse response = httpsPolicyClient.getPolicy(record, Optional.ofNullable(config)
+    private StsPolicy fetchPolicyHttps(StsRecord stsRecord, Config config) throws PolicyWebPKIInvalidException, PolicyFetchErrorException {
+        HttpsResponse response = httpsPolicyClient.getPolicy(stsRecord, Optional.ofNullable(config)
                 .map(Config::getPolicyMaxBodySize)
                 .orElse(new Config().getPolicyMaxBodySize()) // get default
         );
 
-        StsPolicy policy = new StsPolicy(record, response);
+        StsPolicy policy = new StsPolicy(stsRecord, response);
 
         if (config != null) {
             policy.setConfig(config);

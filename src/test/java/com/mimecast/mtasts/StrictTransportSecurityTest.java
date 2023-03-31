@@ -2,34 +2,30 @@ package com.mimecast.mtasts;
 
 import com.mimecast.mtasts.assets.StsPolicy;
 import com.mimecast.mtasts.cache.MemoryPolicyCache;
+import com.mimecast.mtasts.client.HttpsPolicyClient;
 import com.mimecast.mtasts.client.XBillDnsRecordClient;
-import com.mimecast.mtasts.exception.BadPolicyException;
-import com.mimecast.mtasts.exception.BadRecordException;
-import com.mimecast.mtasts.exception.NoRecordException;
+import com.mimecast.mtasts.exception.*;
 import com.mimecast.mtasts.trust.PermissiveTrustManager;
-import com.mimecast.mtasts.util.LocalDnsResolver;
-import com.mimecast.mtasts.util.LocalHttpsPolicyClient;
-import com.mimecast.mtasts.util.LocalHttpsResponse;
-import com.mimecast.mtasts.util.LocalHttpsServer;
+import com.mimecast.mtasts.util.*;
 import org.apache.commons.validator.ValidatorException;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xbill.DNS.DClass;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Type;
 
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 class StrictTransportSecurityTest {
@@ -74,7 +70,7 @@ class StrictTransportSecurityTest {
         // Start mock server
         localHttpsServer = new LocalHttpsServer();
 
-        // Instanciate StrictTransportSecurity
+        // Instantiate StrictTransportSecurity
         strictTransportSecurity = new StrictTransportSecurity(new XBillDnsRecordClient(), new LocalHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort()), new MemoryPolicyCache());
     }
 
@@ -84,7 +80,7 @@ class StrictTransportSecurityTest {
     }
 
     @Test
-    void valid() throws ValidatorException, NoRecordException, BadRecordException, BadPolicyException {
+    void valid() throws Exception {
         StsPolicy policy = strictTransportSecurity.getPolicy("mimecast.com").get();
 
         assertEquals(response, policy.getPolicy());
@@ -94,32 +90,58 @@ class StrictTransportSecurityTest {
 
     @Test
     void constructor() {
-        Assertions.assertThrows(InstantiationException.class, () -> new StrictTransportSecurity(null, new LocalHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort()), new MemoryPolicyCache()));
-        Assertions.assertThrows(InstantiationException.class, () -> new StrictTransportSecurity(new XBillDnsRecordClient(), null, new MemoryPolicyCache()));
+        assertThrows(InstantiationException.class, () -> new StrictTransportSecurity(null, new LocalHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort()), new MemoryPolicyCache()));
+        assertThrows(InstantiationException.class, () -> new StrictTransportSecurity(new XBillDnsRecordClient(), null, new MemoryPolicyCache()));
     }
 
     @Test
     void invalidDomain() {
-        Assertions.assertThrows(ValidatorException.class, () -> strictTransportSecurity.getPolicy("mimecast"));
+        assertThrows(ValidatorException.class, () -> strictTransportSecurity.getPolicy("mimecast"));
     }
 
     @Test
     void noDnsRecord() {
-        Assertions.assertThrows(NoRecordException.class, () -> strictTransportSecurity.getPolicy("mimecast.net"));
+        assertThrows(NoRecordException.class, () -> strictTransportSecurity.getPolicy("mimecast.net"));
     }
 
     @Test
     void invalidDnsRecord() {
-        Assertions.assertThrows(BadRecordException.class, () -> strictTransportSecurity.getPolicy("mimecast.eu"));
+        assertThrows(BadRecordException.class, () -> strictTransportSecurity.getPolicy("mimecast.eu"));
+    }
+
+    @Test
+    void invalidPolicyWebPKIException() throws InstantiationException {
+        HttpsPolicyClient httpsPolicyClient = new LocalHttpsPolicyClient(new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) { }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                throw new CertificateException("PKIX path validation failed");
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+        }, localHttpsServer.getPort());
+
+        StrictTransportSecurity invalidPolicyStrictTransportSecurity = new StrictTransportSecurity(new XBillDnsRecordClient(), httpsPolicyClient);
+        assertThrows(PolicyWebPKIInvalidException.class, () -> invalidPolicyStrictTransportSecurity.getPolicy("mimecast.com"));
+    }
+
+    @Test
+    void policyFetchErrorException() throws InstantiationException {
+        FailingHttpsPolicyClient failingHttpsPolicyClient  = new FailingHttpsPolicyClient(new PermissiveTrustManager(), localHttpsServer.getPort());
+        StrictTransportSecurity fetchErrorStrictTransportSecurity = new StrictTransportSecurity(new XBillDnsRecordClient(), failingHttpsPolicyClient);
+        assertThrows(PolicyFetchErrorException.class, () -> fetchErrorStrictTransportSecurity.getPolicy("mimecast.com"));
     }
 
     @Test
     void invalidHttpsPolicy() {
-        Assertions.assertThrows(BadPolicyException.class, () -> strictTransportSecurity.getPolicy("mimecast.org"));
+        assertThrows(BadPolicyException.class, () -> strictTransportSecurity.getPolicy("mimecast.org"));
     }
 
     @Test
-    void validCache() throws ValidatorException, NoRecordException, BadRecordException, BadPolicyException {
+    void validCache() throws Exception {
         StsPolicy policy;
 
         // Ensure cached
@@ -133,7 +155,7 @@ class StrictTransportSecurityTest {
     }
 
     @Test
-    void noRecordValidCache() throws ValidatorException, NoRecordException, BadRecordException, BadPolicyException {
+    void noRecordValidCache() throws Exception {
         StsPolicy policy;
 
         // Ensure cached
