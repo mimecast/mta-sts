@@ -17,12 +17,12 @@ import java.util.List;
  * <p>Once constructed all data can be retrieved.
  * <p>Primary scope is to match MX domains against the policy list of MX masks.
  *
- * @link https://tools.ietf.org/html/rfc8461#section-3.2 RFC8461#section-3.2
+ * @link <a href="https://tools.ietf.org/html/rfc8461#section-3.2">RFC8461#section-3.2</a>
  *
  * @see StsRecord
  * @see PolicyCache
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public class StsPolicyValidator {
     private static final Logger log = LogManager.getLogger(StsPolicyValidator.class);
@@ -47,7 +47,7 @@ public class StsPolicyValidator {
     public String getPolicy(HttpsResponse response, Config config) {
         // Validate required.
         if (!response.isSuccessful()) {
-            log("Response unsuccessfull: " + response.getMessage(), true);
+            log("Response unsuccessful: " + response.getMessage(), true);
         }
         else if (response.getCode() != 200) {
             log("Response code invalid: " + response.getCode(), true);

@@ -6,9 +6,7 @@ import com.mimecast.mtasts.assets.DnsRecord;
 import com.mimecast.mtasts.assets.StsPolicy;
 import com.mimecast.mtasts.client.OkHttpsPolicyClient;
 import com.mimecast.mtasts.client.XBillDnsRecordClient;
-import com.mimecast.mtasts.exception.BadPolicyException;
-import com.mimecast.mtasts.exception.BadRecordException;
-import com.mimecast.mtasts.exception.NoRecordException;
+import com.mimecast.mtasts.exception.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -36,7 +34,7 @@ import java.util.stream.Collectors;
  * CLI runnable.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 @SuppressWarnings({"squid:S106","squid:S1192","squid:S3776"})
 public class Main {
@@ -118,7 +116,7 @@ public class Main {
                         }
                     }
 
-                } catch (ValidatorException | NoRecordException | BadRecordException | BadPolicyException e) {
+                } catch (ValidatorException | NoRecordException | BadRecordException | BadPolicyException | PolicyWebPKIInvalidException | PolicyFetchErrorException e) {
                     log("Ran into a problem: " + e.getMessage());
                 }
             }
@@ -170,10 +168,10 @@ public class Main {
 
         // MX Records.
         List<Map<String, String>> mxList = new ArrayList<>();
-        for (DnsRecord record : strictTransportSecurity.getMxRecords(policy.getRecord().getDomain())) {
+        for (DnsRecord dnsRecord : strictTransportSecurity.getMxRecords(policy.getRecord().getDomain())) {
             Map<String, String> mx = new HashMap<>();
-            mx.put("priority", String.valueOf(record.getPriority()));
-            mx.put("entry", record.getName());
+            mx.put("priority", String.valueOf(dnsRecord.getPriority()));
+            mx.put("entry", dnsRecord.getName());
             mxList.add(mx);
         }
         json.put("mxList", mxList);

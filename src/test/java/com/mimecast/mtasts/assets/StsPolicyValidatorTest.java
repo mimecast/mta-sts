@@ -58,11 +58,10 @@ class StsPolicyValidatorTest {
 
         validator.getPolicy(httpsResponse, new Config());
 
-        assertEquals("Response unsuccessfull: Bad Gateway", validator.getErrors().get(0));
+        assertEquals("Response unsuccessful: Bad Gateway", validator.getErrors().get(0));
         assertEquals(1, validator.getErrors().size());
         assertTrue(validator.getWarnings().isEmpty());
-        assertEquals("Errors:\r\n" +
-                "Response unsuccessfull: Bad Gateway\r\n", validator.toString());
+        assertEquals("Errors:\r\nResponse unsuccessful: Bad Gateway\r\n", validator.toString());
     }
 
     @Test
