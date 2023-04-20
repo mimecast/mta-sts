@@ -29,6 +29,10 @@ import java.util.concurrent.TimeUnit;
 public class OkHttpsPolicyClient extends ConfigHandler implements HttpsPolicyClient {
 
     /**
+     * HTTP Client.
+     */
+    private static final OkHttpClient httpClient = new OkHttpClient();
+    /**
      * Trust manager to use for certificate validation.
      */
     private final X509TrustManager trustManager;
@@ -123,7 +127,7 @@ public class OkHttpsPolicyClient extends ConfigHandler implements HttpsPolicyCli
      * @return OkHttpClient.Builder instance.
      */
     protected OkHttpClient.Builder getBuilder(SSLSocketFactory socketFactory) {
-        return new OkHttpClient.Builder()
+        return httpClient.newBuilder()
                 .addInterceptor(new UserAgentInterceptor())
                 .connectTimeout(config.getConnectTimeout(), TimeUnit.SECONDS)
                 .writeTimeout(config.getWriteTimeout(), TimeUnit.SECONDS)
