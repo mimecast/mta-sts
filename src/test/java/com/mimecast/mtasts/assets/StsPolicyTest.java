@@ -288,6 +288,63 @@ class StsPolicyTest {
     }
 
     @Test
+    void duplicateMode1() {
+        StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
+
+        String policyBody = "version: STSv1\r\n" +
+                "mode: enforce\r\n" +
+                "mode: testing\r\n" +
+                "mode: none\r\n" +
+                "mx: gmail-smtp-in.l.google.com\r\n" +
+                "mx: *.gmail-smtp-in.l.google.com\r\n" +
+                "max_age: 604800\r\n";
+
+        HttpsResponseMock httpsResponse = new HttpsResponseMock()
+                .setSuccessful(true)
+                .setCode(200)
+                .setMessage("OK")
+                .setHandshake(true)
+                .setPeerCertificates(new ArrayList<>())
+                .putHeader("Content-Type", "text/plain")
+                .setBody(policyBody);
+
+        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
+
+        assertTrue(policy.isValid());
+        assertEquals("enforce", policy.getMode().toString());
+        assertTrue(policy.getValidator().getErrors().isEmpty());
+        assertTrue(policy.getValidator().getWarnings().isEmpty());
+    }
+
+    @Test
+    void duplicateMode2() {
+        StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
+
+        String policyBody = "version: STSv1\r\n" +
+                "mode: testing\r\n" +
+                "mode: enforced\r\n" +
+                "mx: gmail-smtp-in.l.google.com\r\n" +
+                "mx: *.gmail-smtp-in.l.google.com\r\n" +
+                "max_age: 604800\r\n";
+
+        HttpsResponseMock httpsResponse = new HttpsResponseMock()
+                .setSuccessful(true)
+                .setCode(200)
+                .setMessage("OK")
+                .setHandshake(true)
+                .setPeerCertificates(new ArrayList<>())
+                .putHeader("Content-Type", "text/plain")
+                .setBody(policyBody);
+
+        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
+
+        assertTrue(policy.isValid());
+        assertEquals("testing", policy.getMode().toString());
+        assertTrue(policy.getValidator().getErrors().isEmpty());
+        assertTrue(policy.getValidator().getWarnings().isEmpty());
+    }
+
+    @Test
     void invalidModeNone() {
         StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
 
@@ -711,7 +768,7 @@ class StsPolicyTest {
 
     @Test
     void invalidString() {
-        Assertions.assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
+        assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
                 "mode: enforce\r\n" +
                 "mx: *.mimecast.com\r\n" +
                 "max_age: 604800\r\n" +
@@ -719,7 +776,7 @@ class StsPolicyTest {
                 "domain: mimecast\r\n" +
                 "record_id: 19840507T234501\r\n").make());
 
-        Assertions.assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
+        assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
                 "mode: enforce\r\n" +
                 "mx: *.mimecast.com\r\n" +
                 "max_age: 604800\r\n" +
@@ -727,7 +784,7 @@ class StsPolicyTest {
                 "domain: mimecast.com\r\n" +
                 "record_id: 19840507T234501\r\n").make());
 
-        Assertions.assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
+        assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
                 "mode: enforce\r\n" +
                 "mx: *.mimecast.com\r\n" +
                 "max_age: 604800\r\n" +
@@ -735,7 +792,7 @@ class StsPolicyTest {
                 "domain: mimecast.com\r\n" +
                 "record_id: \r\n").make());
 
-        Assertions.assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
+        assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
                 "mode: enforce\r\n" +
                 "mx: *.mimecast.com\r\n" +
                 "max_age: 604800\r\n" +
@@ -743,7 +800,7 @@ class StsPolicyTest {
                 "domain: mimecast.com\r\n" +
                 "record_id: 19840507T234501\r\n").make());
 
-        Assertions.assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
+        assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
                 "mode: enforce\r\n" +
                 "mx: *.mimecast.com\r\n" +
                 "max_age: 604800\r\n").make());
@@ -751,7 +808,7 @@ class StsPolicyTest {
 
     @Test
     void stringException() {
-        Assertions.assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
+        assertThrows(InvalidParameterException.class, () -> new StsPolicy("version: STSv1\r\n" +
                 "mode: enforce\r\n" +
                 "mx: *.mimecast.com\r\n" +
                 "max_age: 604800\r\n").make());
