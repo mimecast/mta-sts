@@ -25,12 +25,12 @@ import java.util.List;
  * <p>Once constructed all data can be retrieved.
  * <p>Primary scope is to match MX domains against the policy list of MX masks.
  *
- * @link https://tools.ietf.org/html/rfc8461#section-3.2 RFC8461#section-3.2
+ * @link <a href="https://tools.ietf.org/html/rfc8461#section-3.2">RFC8461#section-3.2</a>
  *
  * @see StsRecord
  * @see PolicyCache
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public final class StsPolicy extends ConfigHandler {
     private static final Logger log = LogManager.getLogger(StsPolicy.class);
@@ -38,7 +38,7 @@ public final class StsPolicy extends ConfigHandler {
     /**
      * MTA-STS record instance.
      */
-    private StsRecord record;
+    private StsRecord stsRecord;
 
     /**
      * TLSRPT record instance.
@@ -102,11 +102,11 @@ public final class StsPolicy extends ConfigHandler {
      * <p>Whenever the policy is to be used a new record should be fetched to ensure the policy was not updated by comparing cached and new record IDs.
      * <p>The parser will not except on parsing so it should always be validated via the provided isValid() method.
      *
-     * @param record StsRecord instance.
+     * @param stsRecord StsRecord instance.
      * @param response HttpsResponse instance.
      */
-    public StsPolicy(StsRecord record, HttpsResponse response) {
-        this.record = record;
+    public StsPolicy(StsRecord stsRecord, HttpsResponse response) {
+        this.stsRecord = stsRecord;
         this.response = response;
         this.fetchTime = Instant.now().getEpochSecond();
     }
@@ -156,7 +156,7 @@ public final class StsPolicy extends ConfigHandler {
             List<Pair> pairs = parse();
             makePolicy(pairs);
 
-            if (record == null) {
+            if (stsRecord == null) {
                 makeRecord(pairs);
             }
         }
@@ -286,7 +286,7 @@ public final class StsPolicy extends ConfigHandler {
 
         // Create record if domain, record_id and fetch_time set.
         if (domain != null && recordId != null && fetchTime > 0) {
-            record = new StsRecord(domain, "v=" + version + "; id=" + recordId + ";");
+            stsRecord = new StsRecord(domain, "v=" + version + "; id=" + recordId + ";");
         }
         // Throw runtime exception.
         else {
@@ -310,7 +310,7 @@ public final class StsPolicy extends ConfigHandler {
      * @return StsRecord instance.
      */
     public StsRecord getRecord() {
-        return record;
+        return stsRecord;
     }
 
     /**
@@ -487,8 +487,8 @@ public final class StsPolicy extends ConfigHandler {
 
         builder.append("max_age: ").append(maxAge).append("\r\n")
             .append("fetch_time: ").append(fetchTime).append("\r\n")
-            .append("domain: ").append(record.getDomain()).append("\r\n")
-            .append("record_id: ").append(record.getId()).append("\r\n");
+            .append("domain: ").append(stsRecord.getDomain()).append("\r\n")
+            .append("record_id: ").append(stsRecord.getId()).append("\r\n");
 
         return builder.toString();
     }
