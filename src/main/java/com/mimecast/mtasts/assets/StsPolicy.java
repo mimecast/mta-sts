@@ -206,7 +206,9 @@ public final class StsPolicy extends ConfigHandler {
                     break;
 
                 case "mode":
-                    mode = StsMode.get(entry.getValue()).orElse(StsMode.NONE);
+                    if (mode == StsMode.NONE) {
+                        mode = StsMode.get(entry.getValue()).orElse(StsMode.NONE);
+                    }
                     break;
 
                 case "mx":
