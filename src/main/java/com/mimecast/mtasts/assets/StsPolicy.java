@@ -96,6 +96,11 @@ public final class StsPolicy extends ConfigHandler {
     private boolean cached;
 
     /**
+     * Found mode or not.
+     */
+    private boolean foundMode = false;
+
+    /**
      * Constructs a new StsPolicy instance with given record and HTTP response.
      * <p>Requires a fresh StsRecord instance to construct so the pair can be cached together.
      * <p>While the record isn't used within it is required for update check.
@@ -206,8 +211,12 @@ public final class StsPolicy extends ConfigHandler {
                     break;
 
                 case "mode":
-                    if (mode == StsMode.NONE) {
+                    if(foundMode) {
+                        String warning = "Multiple entries of mode found. mode: " + entry.getValue();
+                        validator.addWarning(warning);
+                    } else {
                         mode = StsMode.get(entry.getValue()).orElse(StsMode.NONE);
+                        foundMode = true;
                     }
                     break;
 

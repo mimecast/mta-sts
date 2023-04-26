@@ -313,7 +313,7 @@ class StsPolicyTest {
         assertTrue(policy.isValid());
         assertEquals("enforce", policy.getMode().toString());
         assertTrue(policy.getValidator().getErrors().isEmpty());
-        assertTrue(policy.getValidator().getWarnings().isEmpty());
+        assertFalse(policy.getValidator().getWarnings().isEmpty());
     }
 
     @Test
@@ -341,7 +341,36 @@ class StsPolicyTest {
         assertTrue(policy.isValid());
         assertEquals("testing", policy.getMode().toString());
         assertTrue(policy.getValidator().getErrors().isEmpty());
-        assertTrue(policy.getValidator().getWarnings().isEmpty());
+        assertFalse(policy.getValidator().getWarnings().isEmpty());
+    }
+
+    @Test
+    void duplicateMode3() {
+        StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
+
+        String policyBody = "version: STSv1\r\n" +
+                "mode: none\r\n" +
+                "mode: testing\r\n" +
+                "mode: enforced\r\n" +
+                "mx: gmail-smtp-in.l.google.com\r\n" +
+                "mx: *.gmail-smtp-in.l.google.com\r\n" +
+                "max_age: 604800\r\n";
+
+        HttpsResponseMock httpsResponse = new HttpsResponseMock()
+                .setSuccessful(true)
+                .setCode(200)
+                .setMessage("OK")
+                .setHandshake(true)
+                .setPeerCertificates(new ArrayList<>())
+                .putHeader("Content-Type", "text/plain")
+                .setBody(policyBody);
+
+        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
+
+        assertFalse(policy.isValid());
+        assertEquals("none", policy.getMode().toString());
+        assertTrue(policy.getValidator().getErrors().isEmpty());
+        assertFalse(policy.getValidator().getWarnings().isEmpty());
     }
 
     @Test
