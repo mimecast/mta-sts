@@ -87,7 +87,7 @@ public class Config {
     /**
      * Require HTTPS response Content-Type as text/plain.
      */
-    protected boolean requireTextPlain = true;
+    protected boolean requireTextPlain = false;
 
     /**
      * Is required text/plain.
@@ -112,7 +112,7 @@ public class Config {
     /**
      * Require policy line endings as CRLF.
      */
-    protected boolean requireCRLF = true;
+    protected boolean requireCRLF = false;
 
     /**
      * Is required policy line endings.

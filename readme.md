@@ -18,6 +18,18 @@ This project can be compiled into a runnable JAR.
 A CLI interface is implemented.
 
 
+Best practices
+--------------
+The following validations are off by default:
+- `Require HTTPS response Content-Type as text/plain.`
+
+In practice we see policis that will not have it or have a different value.
+
+- `Require policy line endings as CRLF.`
+
+While the policy states: `This resource contains the following CRLF-separated key/value pairs`
+but in the ABNF you see: `sts-policy-term          = LF / CRLF`
+
 Contributions
 -------------
 Contributions of any kind (bug fixes, new features...) are welcome!
