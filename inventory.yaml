@@ -1,10 +1,11 @@
-component: "MTA-STS"
-component_usage: "Open Source"
-owning_team: "Vlad Marian"
+---
+component: MTA-STS
+component_usage: OPENSOURCE
+owning_team: Vlad Marian
 project_name: MTS-STS
-full_path: 'https://github.com/mimecast/mta-sts'
+full_path: https://github.com/mimecast/mta-sts
 risk_category: low
 application_purpose: library
 secrets_scan_date: '2023-02-13'
 dev_language:
-  - Java
+- Java

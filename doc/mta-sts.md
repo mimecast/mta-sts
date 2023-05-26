@@ -3,7 +3,7 @@ MTA-STS
 
 SMTP MTA Strict Transport Security
 
-Designed to protect against the opportunistic nature of STARTTLS and MITM attacks that can remove STARTLS advertising to force plain text exchange.
+Designed to protect against the opportunistic nature of STARTTLS and MITM attacks that can remove STARTTLS advertising to force plain text exchange.
 
 This is done by using a combination of DNS TXT record and well-known HTTPS text/plain file to enforce TLS 1.2 or newer to existing MX servers.
 
@@ -12,11 +12,11 @@ The key security functionality to defeat MITM attacks is the secure nature of ce
 
 Terminology
 -----------
-The key words "MUST", "MAY" and "SHOULD" in this document are to be interpreted as described in
+The keywords "MUST", "MAY" and "SHOULD" in this document are to be interpreted as described in
 BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as shown here.
 
 
-Worlflow
+Workflow
 --------
 
 A TXT record is used for advertising MTA-STS support.
@@ -46,7 +46,7 @@ TLS handshake MUST only support TLSv1.2 or newer.
 Considerations
 --------------
 
-To allow rapid changes to long lived policies MTA's MUST check the DNS TXT record before a connection
+To allow rapid changes to long-lived policies MTA's MUST check the DNS TXT record before a connection
 even when having a cache entry for the domain.
 If the ID has changed the cache should be invalidated and the policy file re-downloaded.
 
@@ -54,7 +54,7 @@ If multiple TXT records for "_mta-sts" are returned by the resolver, records tha
 If the number of resulting records is not one, or if the resulting record is syntactically invalid,
 senders MUST assume the recipient domain does not have an available MTA-STS Policy and skip the remaining steps of policy discovery.
 
-If a MX validation fails or STARTTLS is not advertised senders SHOULD try the next MX rather than re-queueing.
+If an MX validation fails or STARTTLS is not advertised senders SHOULD try the next MX rather than re-queueing.
 
 If a valid TXT record is found but no policy can be fetched via HTTPS (for any reason),
 and there is no valid (non-expired) previously cached policy,
@@ -98,7 +98,7 @@ Specifications
 
   - File MUST contain the following variables formatted as above:
     - version: STSv1 - The only version supported at the time of writing.
-    - mode: enforce, testing or none
+    - mode: enforce, testing or none. If multiple entries are found, the first entry is considered and all other entries are ignored.
       - enforce: All validations MUST pass
       - testing: Delivery may proceed regardless of validation failures.
       - none: Disabled
