@@ -2,7 +2,6 @@ package com.mimecast.mtasts.assets;
 
 import com.mimecast.mtasts.client.HttpsResponseMock;
 import com.mimecast.mtasts.config.Config;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.security.InvalidParameterException;
@@ -521,7 +520,7 @@ class StsPolicyTest {
                 .setBody(policyBody);
 
         StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
-        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
+        StsPolicy policy = new StsPolicy(record, httpsResponse).setConfig(new Config().setRequireCRLF(true)).make();
 
         assertFalse(policy.isValid());
         assertFalse(policy.isCached());
@@ -551,7 +550,7 @@ class StsPolicyTest {
                 .setBody(policyBody);
 
         StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
-        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
+        StsPolicy policy = new StsPolicy(record, httpsResponse).setConfig(new Config().setRequireCRLF(true)).make();
 
         assertFalse(policy.isValid());
         assertFalse(policy.isCached());
@@ -581,7 +580,7 @@ class StsPolicyTest {
                 .setBody(policyBody);
 
         StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
-        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
+        StsPolicy policy = new StsPolicy(record, httpsResponse).setConfig(new Config().setRequireCRLF(true)).make();
 
         assertFalse(policy.isValid());
         assertFalse(policy.isCached());
@@ -726,7 +725,7 @@ class StsPolicyTest {
                 .setBody(policyBody);
 
         StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
-        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
+        StsPolicy policy = new StsPolicy(record, httpsResponse).setConfig(new Config().setRequireCRLF(true)).make();
 
         assertFalse(policy.isValid());
         assertFalse(policy.isCached());
@@ -755,7 +754,7 @@ class StsPolicyTest {
                 .setBody(policyBody);
 
         StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
-        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
+        StsPolicy policy = new StsPolicy(record, httpsResponse).setConfig(new Config().setRequireCRLF(true)).make();
 
         assertFalse(policy.isValid());
         assertFalse(policy.isCached());
@@ -784,7 +783,7 @@ class StsPolicyTest {
                 .setBody(policyBody);
 
         StsRecord record = new StsRecord("mimecast.com", "\"v=STSv1; id=19840507T234501;\"");
-        StsPolicy policy = new StsPolicy(record, httpsResponse).make();
+        StsPolicy policy = new StsPolicy(record, httpsResponse).setConfig(new Config().setRequireCRLF(true)).make();
 
         assertFalse(policy.isValid());
         assertFalse(policy.isCached());

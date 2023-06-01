@@ -2,7 +2,8 @@ package com.mimecast.mtasts.config;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ConfigHandlerTest {
 
@@ -14,8 +15,8 @@ class ConfigHandlerTest {
         assertEquals(60, config.getConnectTimeout());
         assertEquals(60, config.getWriteTimeout());
         assertEquals(60, config.getReadTimeout());
-        assertTrue(config.isRequireTextPlain());
-        assertTrue(config.isRequireCRLF());
+        assertFalse(config.isRequireTextPlain());
+        assertFalse(config.isRequireCRLF());
         assertEquals(64000, config.getPolicyMaxBodySize());
         assertEquals(31557600, config.getPolicyMaxAge());
         assertEquals(604800, config.getPolicyMinAge());

@@ -178,7 +178,7 @@ class StsPolicyValidatorTest {
                 .setPeerCertificates(new ArrayList<>())
                 .setBody(policyBody);
 
-        validator.getPolicy(httpsResponse, new Config());
+        validator.getPolicy(httpsResponse, new Config().setRequireTextPlain(true));
 
         assertEquals("Header Content-Type not found", validator.getErrors().get(0));
         assertEquals(1, validator.getErrors().size());
