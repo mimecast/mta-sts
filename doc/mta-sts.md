@@ -83,7 +83,7 @@ Specifications
 
 2. HTTPS TXT file:
 
-        https://mta-sts.<DOMAIN>/.well-known/mta-sts.txt
+        https://mta-sts.example.com/.well-known/mta-sts.txt
 
   - File MUST be downloaded over HTTPS.
   - Server certificate MUST be valid and trusted.
