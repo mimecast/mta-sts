@@ -5,7 +5,7 @@ owning_team: Vlad Marian
 project_name: MTS-STS
 full_path: https://github.com/mimecast/mta-sts
 risk_category: low
-application_purpose: library
+application_purpose: testing
 secrets_scan_date: '2023-02-13'
 dev_language:
 - Java
