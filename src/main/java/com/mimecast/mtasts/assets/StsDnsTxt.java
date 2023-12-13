@@ -39,7 +39,7 @@ public abstract class StsDnsTxt {
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
             if (token.contains("=")) {
-                String[] splits = token.split("=");
+                String[] splits = token.split("=", 2);
                 if (splits.length == 2) {
                     tokens.put(splits[0].trim(), splits[1].trim());
                 }

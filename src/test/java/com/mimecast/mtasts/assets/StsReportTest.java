@@ -30,6 +30,17 @@ class StsReportTest {
         assertEquals(1, report.getRua().size());
         assertEquals("https://tlsrpt.mimecast.com/v1", report.getRua().get(0));
 
+        // HTTPS Equals
+        report = new StsReport("v=TLSRPTv1; rua=https://tlsrpt.mimecast.com/v1.app?val=1");
+
+        assertTrue(report.isValid());
+
+        assertEquals("v=TLSRPTv1; rua=https://tlsrpt.mimecast.com/v1.app?val=1", report.getRecord());
+
+        assertEquals("TLSRPTv1", report.getVersion());
+        assertEquals(1, report.getRua().size());
+        assertEquals("https://tlsrpt.mimecast.com/v1.app?val=1", report.getRua().get(0));
+
         // BOTH
         report = new StsReport("v=TLSRPTv1; rua=mailto:tlsrpt@mimecast.com,https://tlsrpt.mimecast.com/v1");
 
