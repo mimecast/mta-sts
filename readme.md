@@ -30,6 +30,7 @@ In practice we see policis that will not have it or have a different value.
 While the policy states: `This resource contains the following CRLF-separated key/value pairs`
 but in the ABNF you see: `sts-policy-term          = LF / CRLF`
 
+
 Contributions
 -------------
 Contributions of any kind (bug fixes, new features...) are welcome!
@@ -42,6 +43,15 @@ Any merge request made should align to existing coding style and naming conventi
 Before submitting a merge request please run a comprehensive code quality analysis (IntelliJ, SonarQube).
 
 Read more [here](contributing.md).
+
+
+Disclosure
+----------
+This project makes use of sample passwords as needed for testing and demonstration purposes.
+
+- avengers - Test keystore password that contains a single entry issued to Tony Stark. (Easter egg)
+
+**These passwords are not in use within Mimecast production environments.**
 
 
 RFC Excerpts
