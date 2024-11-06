@@ -24,7 +24,7 @@ import java.util.concurrent.Executor;
  * <p>NS, MX and PTR strings should not be empty.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 @SuppressWarnings("squid:S1186")
 public class LocalDnsResolver implements Resolver {

@@ -5,7 +5,7 @@ package com.mimecast.mtasts.config;
  * <p>Provides config instance and encapsulation.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public abstract class ConfigHandler {
 

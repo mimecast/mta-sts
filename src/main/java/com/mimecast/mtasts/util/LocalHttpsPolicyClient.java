@@ -11,7 +11,7 @@ import javax.net.ssl.X509TrustManager;
  * <p>Extends HttpsPolicyClient to mock resources needed for testing via local server.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 @SuppressWarnings("squid:S3510")
 public class LocalHttpsPolicyClient extends OkHttpsPolicyClient {

@@ -14,7 +14,7 @@ import java.util.Map;
  * @see StsPolicy
  * @see PolicyCache
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public class MemoryPolicyCache extends PolicyCache {
 

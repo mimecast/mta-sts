@@ -4,7 +4,7 @@ package com.mimecast.mtasts.exception;
  * Policy Exception.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public class BadPolicyException extends Exception {
 

@@ -35,7 +35,7 @@ Additionally you may wish to implement your own TrustManager implementation if y
      * <p>Filters MX records against the recipient domain MTA-STS policy if any.
      *
      * @author "Vlad Marian" <vmarian@mimecast.com>
-     * @link http://mimecast.com Mimecast
+     * @link <a href="http://mimecast.com">Mimecast</a>
      */
     public class StrictMx {
         private static final Logger log = LogManager.getLogger(StrictMx.class);

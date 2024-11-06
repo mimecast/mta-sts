@@ -10,7 +10,7 @@ import java.security.cert.X509Certificate;
  * <p>Please provide your own trust manager implementing a trust store.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 @SuppressWarnings("all")
 public class PermissiveTrustManager implements X509TrustManager {

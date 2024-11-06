@@ -13,7 +13,7 @@ import java.util.Optional;
  *
  * @see XBillDnsRecordClient
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public interface DnsRecordClient {
 

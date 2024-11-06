@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
  * @see StsRecord
  * @see StsReport
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public abstract class StsDnsTxt {
 

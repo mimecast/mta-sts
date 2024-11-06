@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
  * <p>Provides validation by checking both key and value and not empty.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public class Pair {
     private static final Logger log = LogManager.getLogger(Pair.class);

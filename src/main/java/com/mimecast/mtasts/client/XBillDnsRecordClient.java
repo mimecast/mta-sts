@@ -23,7 +23,7 @@ import java.util.Optional;
  * @see Lookup
  * @see LocalDnsResolver
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public class XBillDnsRecordClient implements DnsRecordClient {
     private static final Logger log = LogManager.getLogger(XBillDnsRecordClient.class);
