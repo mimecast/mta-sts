@@ -2,8 +2,8 @@ package com.mimecast.mtasts;
 
 import com.mimecast.mtasts.cache.MemoryPolicyCache;
 import com.mimecast.mtasts.client.XBillDnsRecordClient;
-import com.mimecast.mtasts.util.LocalHttpsPolicyClient;
 import com.mimecast.mtasts.trust.PermissiveTrustManager;
+import com.mimecast.mtasts.util.LocalHttpsPolicyClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
  * CLI runnable.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 final class MainMock extends Main {
 

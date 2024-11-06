@@ -21,7 +21,7 @@ import java.util.Map;
  * <p>Wrapper for HttpsPolicyClient response.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public class OkHttpsResponse implements HttpsResponse {
     private static final Logger log = LogManager.getLogger(OkHttpsResponse.class);

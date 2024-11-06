@@ -7,7 +7,7 @@ import java.net.HttpURLConnection;
  * <p>Holds response payload and meta.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public class LocalHttpsResponse {
 

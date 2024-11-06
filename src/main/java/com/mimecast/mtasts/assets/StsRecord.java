@@ -10,7 +10,7 @@ package com.mimecast.mtasts.assets;
  *
  * @see StsPolicy
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public final class StsRecord extends StsDnsTxt {
 
