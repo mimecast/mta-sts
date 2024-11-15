@@ -51,9 +51,9 @@ public class LocalDnsResolver implements Resolver {
      * @param question Record question instance.
      * @return List of Record.
      */
-    private List<Record> lookup(Record question) {
+    private List<org.xbill.DNS.Record> lookup(org.xbill.DNS.Record question) {
         Map<Integer, List<String>> answer = map.get(question.getName().toString(true));
-        List<Record> response = new ArrayList<>();
+        List<org.xbill.DNS.Record> response = new ArrayList<>();
 
         if (answer != null && !answer.isEmpty()) {
             List<String> records = answer.get(question.getType());
@@ -79,8 +79,8 @@ public class LocalDnsResolver implements Resolver {
      * @param records List of String records.
      * @return List of Record.
      */
-    private List<Record> loop(Name name, List<String> records, int type) throws TextParseException, UnknownHostException {
-        List<Record> response = new ArrayList<>();
+    private List<org.xbill.DNS.Record> loop(Name name, List<String> records, int type) throws TextParseException, UnknownHostException {
+        List<org.xbill.DNS.Record> response = new ArrayList<>();
 
         switch (type) {
             case Type.NS:
@@ -130,9 +130,9 @@ public class LocalDnsResolver implements Resolver {
         answer.addRecord(question.getQuestion(), 0);
 
         // Answer.
-        List<Record> records = lookup(question.getQuestion());
+        List<org.xbill.DNS.Record> records = lookup(question.getQuestion());
         if (!records.isEmpty()) {
-            for (Record record : records) {
+            for (org.xbill.DNS.Record record : records) {
                 answer.addRecord(record, 1);
             }
         }
