@@ -1,9 +1,9 @@
 package com.mimecast.mtasts.util;
 
 import com.mimecast.mtasts.trust.PermissiveTrustManager;
-import com.sun.net.httpserver.Headers; // NOSONAR
-import com.sun.net.httpserver.HttpsConfigurator; // NOSONAR
-import com.sun.net.httpserver.HttpsServer; // NOSONAR
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsServer;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -23,7 +23,7 @@ import java.util.Map;
  * <p>The server should be started after all path and responses have been put.
  *
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public class LocalHttpsServer {
 

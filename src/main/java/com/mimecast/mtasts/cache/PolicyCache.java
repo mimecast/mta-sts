@@ -15,7 +15,7 @@ import java.util.Optional;
  *
  * @see StsPolicy
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public abstract class PolicyCache {
     private static final Logger log = LogManager.getLogger(PolicyCache.class);

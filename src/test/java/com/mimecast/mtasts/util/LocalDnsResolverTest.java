@@ -3,7 +3,9 @@ package com.mimecast.mtasts.util;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.xbill.DNS.*;
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.TextParseException;
+import org.xbill.DNS.Type;
 
 import java.util.ArrayList;
 
@@ -91,7 +93,7 @@ class LocalDnsResolverTest {
         assertNull(lookup("mimecast.eu", Type.MX));
     }
 
-    Record[] lookup(String uri, int type) throws TextParseException {
+    org.xbill.DNS.Record[] lookup(String uri, int type) throws TextParseException {
         Lookup lookup = new Lookup(uri, type);
         return lookup.run();
     }

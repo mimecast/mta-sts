@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @see StsPolicy
  * @author "Vlad Marian" <vmarian@mimecast.com>
- * @link http://mimecast.com Mimecast
+ * @link <a href="http://mimecast.com">Mimecast</a>
  */
 public final class StsReport extends StsDnsTxt {
 
