@@ -10,7 +10,7 @@
     <description>MTA Strict Transport Security.</description>
 
     <properties>
-        <jdk.version>1.8</jdk.version>
+        <jdk.version>21</jdk.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>2.24.3</log4j.version>
     </properties>
